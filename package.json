@@ -1,0 +1,51 @@
+{
+  "name": "xrparrot-internal-api",
+  "version": "0.1.0",
+  "description": "XRParrot internal API: receive TX notifications, store them and accept API requests.",
+  "main": "./index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WietseWind/xrparrot-internal-api.git"
+  },
+  "keywords": [
+    "xrp",
+    "xrpl",
+    "xrparrot",
+    "iban",
+    "sepa",
+    "api"
+  ],
+  "author": "WietseWind",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/WietseWind/xrparrot-internal-api/issues"
+  },
+  "homepage": "https://github.com/WietseWind/xrparrot-internal-api",
+  "dependencies": {
+    "express": "^4.16.3",
+    "ip-range-check": "0.0.2",
+    "nunjucks": "^3.1.3"
+  },
+  "scripts": {
+    "dev": "nodemon .",
+    "pm2": "pm2 reload pm2.config.js --env development",
+    "start": "docker-compose up -d",
+    "up": "docker-compose up -d",
+    "down": "docker-compose down",
+    "stop": "docker-compose down",
+    "logs": "docker-compose logs --tail 30 -f"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.4",
+    "pm2": "^3.0.4"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "test/*",
+      "docs/*",
+      "node_modules/*",
+      "db/*"
+    ],
+    "ext": "js"
+  }
+}
