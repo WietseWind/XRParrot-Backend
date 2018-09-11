@@ -2,7 +2,7 @@ const ipRange = require("ip-range-check")
 
 module.exports = async function (expressApp) {
   expressApp.use((req, res, next) => {
-    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
+    const ip = typeof req.headers['x-forwarded-for'] === 'undefined' ? req.connection.remoteAddress : req.headers['x-forwarded-for']
     req.ip = ip
     req.ipTrusted = ipRange(ip, [ "", "185.40.108.0/22" ])
 
