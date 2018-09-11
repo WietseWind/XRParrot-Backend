@@ -7,12 +7,12 @@ module.exports = {
     env: {
       NODE_ENV: 'development',
       PORT: 3001,
-      MONGO: "127.0.0.1:20000/xrparrot" // Assume local docker with mongo @ 20000
+      MONGO: "mongodb://127.0.0.1:20000/xrparrot" // Assume local docker with mongo @ 20000
     },
     env_production: {
       NODE_ENV: 'production',
       PORT: 3000,
-      MONGO: "mongo:27017/xrparrot" // Production assumes docker-compose
+      MONGO: "mongodb://mongo:27017/xrparrot" // Production assumes docker-compose
     }
   }],
   instances: 1

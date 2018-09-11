@@ -19,7 +19,7 @@ services:
     # environment:
       # PORT: 3000 # also available in pm2 "PORT"
       # MODE: "production" # also available in pm2 "NODE_ENV"
-      # MONGO: "mongo:27017/xrparrot" # either set here or in nodemon config in package.json
+      # MONGO: "mongodb://mongo:27017/xrparrot" # either set here or in nodemon config in package.json
     links:
       - mongo
   mongo:
