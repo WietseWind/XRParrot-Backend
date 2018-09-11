@@ -32,7 +32,7 @@ services:
     volumes:
       - ./db:/data/db
     ports:
-      - "127.0.0.1:20000:27017"
+      - 20000:27017
     healthcheck:
       test: echo 'db.stats().ok' | mongo localhost:27017/xrpl
       interval: 5s
