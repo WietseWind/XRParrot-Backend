@@ -3,7 +3,7 @@ module.exports = {
     name: 'XRPARROT',
     script: 'index.js',
     watch: true,
-    ignore_watch: ["node_modules", "db"],
+    ignore_watch: ["node_modules", "db", ".git"],
     env: {
       NODE_ENV: 'development',
       PORT: 3001,
