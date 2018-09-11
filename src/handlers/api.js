@@ -17,12 +17,19 @@ module.exports = async function (expressApp) {
     req.mongo.collection('hook').insertOne({
       mode: req.config.mode,
       trusted: req.ipTrusted,
-      ip: req.remoteAddress,
-      route: req.route,
-      url: req.url,
+      req: {
+        ip: req.remoteAddress,
+        route: req.route,
+        url: req.url,
+        headers: req.headers
+      },
       moment: new Date(),
-      headers: req.headers,
-      data: req.body
+      data: req.body,
+      flow: {
+        reversal: null,
+        payout: null,
+        processed: null
+      }
     }, function(err, r) {
       if (err) {
         console.log('DB[HOOK]', err.toString())
@@ -30,15 +37,15 @@ module.exports = async function (expressApp) {
         console.log('DB[HOOK]', r.insertedCount, r.insertedId)
       }
     })
-    res.json({ message: 'HOOK' })
+    res.json({ message: 'Hook received', trusted: req.ipTrusted })
   })
 
   router.post('/', function(req, res, next) {
     if (typeof req.body === 'object' && typeof req.body.name !== 'undefined') {
       res.json({ 
-        message: 'posted!', 
-        data: req.body,
-        config: req.config
+        message: 'Pong!', 
+        mode: req.config.mode,
+        data: req.body
       })
     } else {
       next()
