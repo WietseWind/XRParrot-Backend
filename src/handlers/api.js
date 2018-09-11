@@ -17,7 +17,7 @@ module.exports = async function (expressApp) {
     req.mongo.collection('hook').insertOne({
       mode: req.config.mode,
       trusted: req.ipTrusted,
-      ip: req.ip,
+      ip: req.remoteAddress,
       route: req.route,
       url: req.url,
       moment: new Date(),
