@@ -5,6 +5,7 @@ async function start () {
   const config = await require('./src/middleware/config')(app)
 
   await require('./src/storage/mongodb')(app)
+  await require('./src/storage/session')(app)
   await require('./src/middleware/what-router')(app)
   await require('./src/middleware/remote-addr')(app)  
   await require('./src/handlers/web')(app)

@@ -22,7 +22,9 @@
   },
   "homepage": "https://github.com/WietseWind/xrparrot-internal-api",
   "dependencies": {
+    "connect-mongo": "^2.0.1",
     "express": "^4.16.3",
+    "express-session": "^1.15.6",
     "ip-range-check": "0.0.2",
     "mongodb": "^3.1.4",
     "nunjucks": "^3.1.3"

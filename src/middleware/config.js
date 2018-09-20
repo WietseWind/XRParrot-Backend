@@ -4,7 +4,8 @@ const path = require('path')
 const config = {
   port: process.env.PORT || 3001,
   mode: process.env.NODE_ENV || 'development',
-  mongo: process.env.MONGO || 'mongodb://127.0.0.1:20000/xrparrot'
+  mongo: process.env.MONGO || 'mongodb://127.0.0.1:20000/xrparrot',
+  sessionSecret: process.env.SESSIONSECRET || 'PepperParrot'
 }
 
 module.exports = async function (expressApp) {
