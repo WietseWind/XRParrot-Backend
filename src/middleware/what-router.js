@@ -6,6 +6,12 @@ module.exports = async function (expressApp) {
       req.route = 'web'
     }
     req.url = '/' + req.route + req.url
+
+    if (req.url.match(/^\/(web|api)\/(web|api)/)) {
+      req.url = req.url.slice(4)
+      req.route = req.url.slice(1, 4)
+    }
+
     next('route')
   })
 }

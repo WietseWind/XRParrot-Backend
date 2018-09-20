@@ -1,5 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const fetch = require('node-fetch')
+const FormData = require('form-data')
 
 module.exports = async function (expressApp) {
   expressApp.use(bodyParser.json())
@@ -13,7 +15,23 @@ module.exports = async function (expressApp) {
     res.json({ message: 'Welcome @ XRParrot' })
   })
 
-  router.post('/api/hook', function(req, res) {
+  router.post('/captcha', function(req, res) {
+    console.log('CAPTCHA', req.body.token)
+    const form = new FormData();
+    form.append('secret', req.config.captchaToken || '')
+    form.append('response', req.body instanceof Object && typeof req.body.token !== 'undefined' ? req.body.token : '')
+    form.append('remoteip', req.remoteAddress)
+
+    fetch('https://www.google.com/recaptcha/api/siteverify', { 
+      method: 'POST', 
+      body: form
+    })
+      .then(res => res.json())
+      .then(json => console.log('Captcha Response', json))
+    res.json({ message: 'Captcha received', trusted: req.ipTrusted })
+  })
+
+  router.post('/hook', function(req, res) {
     req.mongo.collection('hook').insertOne({
       mode: req.config.mode,
       trusted: req.ipTrusted,
@@ -54,7 +72,11 @@ module.exports = async function (expressApp) {
 
   // APIROUTER WILDCARD - FALLBACK
   router.all('*', function(req, res){
-    res.status(404).json({ error: true, req: req.url })
+    if ('OPTIONS' === req.method) {
+      res.sendStatus(200)
+    } else {
+      res.status(404).json({ error: true, req: req.url })
+    }
   })
 
   // Use
