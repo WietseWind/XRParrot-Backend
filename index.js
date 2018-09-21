@@ -13,6 +13,7 @@ async function start () {
   await require('./src/middleware/cli-logger')(app)  
   await require('./src/handlers/web')(app)
   await require('./src/handlers/api')(app)
+  await require('./src/middleware/error-handler')(app)  
 
   app.listen(config.port)
 

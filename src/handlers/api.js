@@ -12,10 +12,12 @@ module.exports = async function (expressApp) {
   const router = express.Router()
 
   router.get('/', function(req, res) {
+    // throw new Error("BROKEN")
     res.json({ message: 'Welcome @ XRParrot' })
   })
 
   router.post('/captcha', function(req, res) {
+    // throw new Error("BROKEN")
     console.log('CAPTCHA', req.body.token)
     const form = new FormData();
     form.append('secret', req.config.captchaToken || '')

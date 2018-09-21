@@ -11,7 +11,8 @@ module.exports = async function (expressApp) {
   const router = express.Router()
 
   router.get('/', express.static('public_html'))
-  router.get('/about', function(req, res){
+  router.get('/about', (req, res, next) => {
+    // throw new Error("BROKEN")
     return res.render('about.html')
   })
 
