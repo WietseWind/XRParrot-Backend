@@ -7,6 +7,7 @@ async function start () {
   await require('./src/storage/mongodb')(app)
   await require('./src/storage/session')(app)
   await require('./src/middleware/cors')(app)
+  await require('./src/middleware/headers')(app)
   await require('./src/middleware/what-router')(app)
   await require('./src/middleware/remote-addr')(app)  
   await require('./src/middleware/cli-logger')(app)  

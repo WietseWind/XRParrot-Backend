@@ -26,6 +26,7 @@
     "express": "^4.16.3",
     "express-session": "^1.15.6",
     "form-data": "^2.3.2",
+    "helmet": "^3.13.0",
     "ip-range-check": "0.0.2",
     "mongodb": "^3.1.4",
     "node-fetch": "^2.2.0",
