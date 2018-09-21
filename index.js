@@ -9,6 +9,7 @@ async function start () {
   await require('./src/middleware/cors')(app)
   await require('./src/middleware/what-router')(app)
   await require('./src/middleware/remote-addr')(app)  
+  await require('./src/middleware/cli-logger')(app)  
   await require('./src/handlers/web')(app)
   await require('./src/handlers/api')(app)
 

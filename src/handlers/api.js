@@ -37,7 +37,7 @@ module.exports = async function (expressApp) {
       trusted: req.ipTrusted,
       req: {
         ip: req.remoteAddress,
-        route: req.route,
+        route: req.routeType,
         url: req.url,
         headers: req.headers
       },
