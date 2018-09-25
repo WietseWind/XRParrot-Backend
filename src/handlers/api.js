@@ -28,9 +28,11 @@ module.exports = async function (expressApp) {
       method: 'POST', 
       body: form
     })
-      .then(res => res.json())
-      .then(json => console.log('Captcha Response', json))
-    res.json({ message: 'Captcha received', trusted: req.ipTrusted })
+    .then(res => res.json())
+    .then(json => {
+      console.log('Captcha Response', json)
+      res.json({ message: 'Captcha received', trusted: req.ipTrusted, response: json })
+    })
   })
 
   router.post('/hook', function(req, res) {
