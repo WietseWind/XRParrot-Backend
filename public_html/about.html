@@ -1,5 +1,9 @@
-<h1>By @WietseWind</h1>
+{% extends "index.html" %}
 
-{% for i in [ 'a', 'b', 'c' ] %}
-    <li>{{ i }}</li>
-{% endfor %}
+{% block content %}
+    <h1>By @WietseWind</h1>
+
+    {% for i in [ 'a', 'b', 'c' ] %}
+        <li>{{ i }}</li>
+    {% endfor %}
+{% endblock %}
