@@ -10,7 +10,7 @@ module.exports = async function (expressApp) {
       directives: {
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", 'maxcdn.bootstrapcdn.com'],
-        imgSrc: ["'self'", 'pp1ek9i.dlvr.cloud']
+        imgSrc: ["'self'"] // todo
       }
     }
   }))

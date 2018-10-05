@@ -23,7 +23,12 @@ module.exports = async function (expressApp) {
 
   // WEBROUTER WILDCARD - FALLBACK
   router.all('*', function(req, res){
-    res.status(404).render('404', { error: 'file not found' })
+    if ('OPTIONS' === req.method) {
+      req.session.destroy()
+      res.sendStatus(200)
+    } else {
+      res.status(404).render('404', { error: 'file not found' })
+    }
   })
 
   // Use

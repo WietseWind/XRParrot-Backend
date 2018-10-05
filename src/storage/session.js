@@ -3,7 +3,7 @@ const MongoStore = require('connect-mongo')(session)
 
 module.exports = async function (expressApp) {
   if (expressApp.config.mode === 'production') {
-    expressApp.set('trust proxy', 1) // trust first proxy
+    expressApp.set('trust proxy', true) // trust first proxy
   }
 
   expressApp.use(session({
@@ -13,7 +13,10 @@ module.exports = async function (expressApp) {
     saveUninitialized: false, // don't create session until something stored
     cookie: {
       secure: expressApp.config.mode === 'production',
-      httpOnly: true
+      httpOnly: true,
+      sameSite: expressApp.config.CookieSameSite || null,
+      domain: expressApp.config.CookieDomain || null,
+      maxAge: null
     },
     store: new MongoStore({
       url: `${expressApp.config.mongo}_sessions`,

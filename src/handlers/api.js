@@ -77,6 +77,7 @@ module.exports = async function (expressApp) {
   // APIROUTER WILDCARD - FALLBACK
   router.all('*', function(req, res){
     if ('OPTIONS' === req.method) {
+      req.session.destroy()
       res.sendStatus(200)
     } else {
       res.status(404).json({ error: true, req: req.url })
