@@ -46,6 +46,9 @@ module.exports = async function (expressApp) {
     express: expressApp
   })
 
+  /**
+   * Testing.
+   */
   env.addFilter('sleep', function sleep (input, callback) {
     const args = Object.values(arguments).slice(1, -1)
     setTimeout(() => {
