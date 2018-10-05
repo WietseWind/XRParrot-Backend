@@ -53,6 +53,6 @@
       "node_modules/*",
       "db/*"
     ],
-    "ext": "js"
+    "ext": "js,json"
   }
 }
