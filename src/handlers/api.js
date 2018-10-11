@@ -1,7 +1,5 @@
 const express = require('express')
 const bodyParser = require('body-parser')
-const fetch = require('node-fetch')
-const FormData = require('form-data')
 
 module.exports = async function (expressApp) {
   expressApp.use(bodyParser.json())
@@ -16,59 +14,16 @@ module.exports = async function (expressApp) {
     res.json({ message: 'Welcome @ XRParrot' })
   })
 
-  router.post('/captcha', function(req, res) {
-    // throw new Error("BROKEN")
-    // console.log('CAPTCHA', req.body.token)
-    const form = new FormData();
-    form.append('secret', req.config.captchaToken || '')
-    form.append('response', req.body instanceof Object && typeof req.body.token !== 'undefined' ? req.body.token : '')
-    form.append('remoteip', req.remoteAddress)
+  // router.post('/hook', require('./api/hook'))
 
-    fetch('https://www.google.com/recaptcha/api/siteverify', { method: 'POST', body: form })
-      .then(res => res.json())
-      .then(json => {
-        console.log(`-- Captcha Response ${json.score || 0} (${json.success ? 'OK' : 'ERR'}) @ ${req.session.id}`)
-        if (json.success && json.score > 0.5) {
-          req.session.captcha = true
-        }
-        res.json({ message: 'Captcha received', trusted: req.ipTrusted, response: json })
-      })
-  })
-
-  router.post('/hook', function(req, res) {
-    req.mongo.collection('hook').insertOne({
-      mode: req.config.mode,
-      trusted: req.ipTrusted,
-      req: {
-        ip: req.remoteAddress,
-        route: req.routeType,
-        url: req.url,
-        headers: req.headers
-      },
-      moment: new Date(),
-      data: req.body,
-      flow: {
-        reversal: null,
-        payout: null,
-        processed: null
-      }
-    }, function(err, r) {
-      if (err) {
-        console.log('DB[HOOK]', err.toString())
-      } else {
-        console.log('DB[HOOK]', r.insertedCount, r.insertedId)
-      }
-    })
-    res.json({ message: 'Hook received', trusted: req.ipTrusted })
-  })
+  router.post('/captcha', require('./api/captcha'))
+  router.post('/xrpl-destination', require('./api/xrpl-destination'))
+  router.post('/iban', require('./api/iban-check'))
+  router.post('/phone', require('./api/phone'))
 
   router.post('/', function(req, res, next) {
     if (typeof req.body === 'object' && typeof req.body.name !== 'undefined') {
-      res.json({ 
-        message: 'Pong!', 
-        mode: req.config.mode,
-        data: req.body
-      })
+      res.json({ message: 'Pong!', mode: req.config.mode, data: req.body })
     } else {
       next()
     }
