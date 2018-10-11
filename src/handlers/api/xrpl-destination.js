@@ -1,10 +1,9 @@
 const fetch = require('node-fetch')
 const rippleAddressCodec = require('ripple-address-codec')
 const xrplClient = require('rippled-ws-client')
-// const FormData = require('form-data')
 
 module.exports = async (req, res) => {
-  let message = 'Address Codec Response'
+  let message = 'XPRL Destination'
   let exception = false
 
   let account = req.body.account || ''
@@ -13,6 +12,7 @@ module.exports = async (req, res) => {
   let accountInfo = {}
   let accountFlags = []
   let tagRequired = false
+  let accountActivated = false
 
   // fetch('https://www.google.com/recaptcha/api/siteverify', { method: 'POST', body: form })
   //   .then(res => res.json())
@@ -30,6 +30,9 @@ module.exports = async (req, res) => {
       const finish = (response, connection) => {
         if (typeof response !== 'string') {
           accountInfo = response
+          if (typeof accountInfo.Balance === 'string') {
+            accountActivated = true
+          }
           if (typeof response.Flags !== 'undefined') {
             const accountRootFlags = {
               PasswordSpent: 0x00010000, // password set fee is spent
@@ -95,6 +98,22 @@ module.exports = async (req, res) => {
     })
   }
 
+  let accountNameInfo = {}
+  let valid = false
+
+  if (addressValid && accountActivated) {
+    await new Promise(resolve => {
+      fetch('https://bithomp.com/api/v1/userinfo/' + account, { method: 'GET' })
+        .then(res => res.json())
+        .then(json => {
+          console.log(`-- AccountInfo [BITHOMP API] @ ${req.session.id}`, json)
+          accountNameInfo = json
+          resolve()
+        })
+        .catch(e => console.log(`BITHOMP API ERROR`, e))
+    })
+  }
+
   let data = {
     accountInfo: accountInfo,
     accountFlags: accountFlags,
@@ -102,28 +121,11 @@ module.exports = async (req, res) => {
     tag: tag,
     addressValid: addressValid,
     tagRequired: tagRequired,
-    tagValid: false,
-    accountActivated: false,
-    accountName: '',
-    valid: false
+    tagValid: !tagRequired || (tagRequired && tag && tag !== null && tag > 0),
+    accountActivated: accountActivated,
+    accountNameInfo: accountNameInfo,
+    valid: valid
   }
 
   res.json({ message: message, trusted: req.ipTrusted, exception: exception, response: data })
-  
-  // throw new Error("BROKEN")
-  // console.log('CAPTCHA', req.body.token)
-  // const form = new FormData()
-  // form.append('secret', req.config.captchaToken || '')
-  // form.append('response', req.body instanceof Object && typeof req.body.token !== 'undefined' ? req.body.token : '')
-  // form.append('remoteip', req.remoteAddress)
-
-  // fetch('https://www.google.com/recaptcha/api/siteverify', { method: 'POST', body: form })
-  //   .then(res => res.json())
-  //   .then(json => {
-  //     console.log(`-- Captcha Response ${json.score || 0} (${json.success ? 'OK' : 'ERR'}) @ ${req.session.id}`)
-  //     if (json.success && json.score > 0.5) {
-  //       req.session.captcha = true
-  //     }
-  //     res.json({ message: 'Captcha received', trusted: req.ipTrusted, response: json })
-  //   })
 }
