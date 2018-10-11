@@ -9,11 +9,12 @@ async function start () {
   await require('./src/middleware/cors')(app)
   await require('./src/middleware/headers')(app)
   await require('./src/middleware/what-router')(app)
-  await require('./src/middleware/remote-addr')(app)  
-  await require('./src/middleware/cli-logger')(app)  
+  await require('./src/middleware/remote-addr')(app)
+  await require('./src/middleware/cli-logger')(app)
   await require('./src/handlers/web')(app)
+  await require('./src/middleware/api-rate-limit')(app)
   await require('./src/handlers/api')(app)
-  await require('./src/middleware/error-handler')(app)  
+  await require('./src/middleware/error-handler')(app)
 
   app.listen(config.port)
 
