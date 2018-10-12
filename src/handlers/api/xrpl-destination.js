@@ -13,6 +13,8 @@ module.exports = async (req, res) => {
   let accountFlags = []
   let tagRequired = false
   let accountActivated = false
+  let doNotSendXrp = false
+  let incomingTxCountWithTag = null
 
   // fetch('https://www.google.com/recaptcha/api/siteverify', { method: 'POST', body: form })
   //   .then(res => res.json())
@@ -30,31 +32,6 @@ module.exports = async (req, res) => {
       const finish = (response, connection) => {
         if (typeof response !== 'string') {
           accountInfo = response
-          if (typeof accountInfo.Balance === 'string') {
-            accountActivated = true
-          }
-          if (typeof response.Flags !== 'undefined') {
-            const accountRootFlags = {
-              PasswordSpent: 0x00010000, // password set fee is spent
-              RequireDestTag: 0x00020000, // require a DestinationTag for payments
-              RequireAuth: 0x00040000, // require authorization to hold IOUs
-              DepositAuth: 0x01000000, // require account to auth deposits
-              DisallowXRP: 0x00080000, // disallow sending XRP
-              DisableMaster: 0x00100000, // force regular key
-              NoFreeze: 0x00200000, // permanently disallowed freezing trustlines
-              GlobalFreeze: 0x00400000, // trustlines globally frozen
-              DefaultRipple: 0x00800000
-            }
-            Object.keys(accountRootFlags).forEach(f => {
-              if (response.Flags & accountRootFlags[f]) {
-                accountFlags.push(f)
-                if (f === 'RequireDestTag') {
-                  tagRequired = true
-                }
-              }
-            })
-          }
-
           resolve()
         } else {
           exception = true
@@ -80,9 +57,47 @@ module.exports = async (req, res) => {
         Connection.send({
           command: 'account_info',
           account: account
-        }).then(r => {
+        }).then(async r => {
           console.log('   >> WSS Response', req.config.mode === 'development' ? r : '')
           if (typeof r === 'object' && r.account_data !== 'undefined') {
+            if (typeof r.account_data.Balance === 'string') {
+              accountActivated = true
+            }
+            if (typeof r.account_data.Flags !== 'undefined') {
+              const accountRootFlags = {
+                PasswordSpent: 0x00010000, // password set fee is spent
+                RequireDestTag: 0x00020000, // require a DestinationTag for payments
+                RequireAuth: 0x00040000, // require authorization to hold IOUs
+                DepositAuth: 0x01000000, // require account to auth deposits
+                DisallowXRP: 0x00080000, // disallow sending XRP
+                DisableMaster: 0x00100000, // force regular key
+                NoFreeze: 0x00200000, // permanently disallowed freezing trustlines
+                GlobalFreeze: 0x00400000, // trustlines globally frozen
+                DefaultRipple: 0x00800000
+              }
+              Object.keys(accountRootFlags).forEach(f => {
+                if (r.account_data.Flags & accountRootFlags[f]) {
+                  accountFlags.push(f)
+                  if (f === 'RequireDestTag') tagRequired = true
+                  if (f === 'DisallowXRP' || f === 'DepositAuth') doNotSendXrp = true
+                }
+              })
+            }
+            if (!tagRequired) {
+              await Connection.send({
+                command: 'account_tx',
+                account: account
+              }).then(txs => {
+                if (typeof txs.transactions !== 'undefined' && txs.transactions && txs.transactions.length > 0) {
+                  incomingTxCountWithTag = txs.transactions.filter(tx => {
+                    return typeof tx.tx.TransactionType === 'string'
+                      && tx.tx.TransactionType === 'Payment'
+                      && typeof tx.tx.DestinationTag !== 'undefined'
+                      && tx.tx.Destination === account
+                  }).length
+                }
+              })
+            }
             finish(r.account_data, Connection)
           } else {
             finish(`Account not found.`, Connection)
@@ -99,7 +114,6 @@ module.exports = async (req, res) => {
   }
 
   let accountNameInfo = {}
-  let valid = false
 
   if (addressValid && accountActivated) {
     await new Promise(resolve => {
@@ -107,12 +121,21 @@ module.exports = async (req, res) => {
         .then(res => res.json())
         .then(json => {
           console.log(`-- AccountInfo [BITHOMP API] @ ${req.session.id}`, json)
-          accountNameInfo = json
+          if (typeof json.error === 'undefined') {
+            accountNameInfo = json
+          }
           resolve()
         })
         .catch(e => console.log(`BITHOMP API ERROR`, e))
     })
   }
+
+  let tagValid = !tagRequired || (tagRequired && tag && tag !== null && tag > 0)
+  let valid = true
+
+  if (!tagValid) valid = false
+  if (!addressValid) valid = false
+  if (doNotSendXrp) valid = false
 
   let data = {
     accountInfo: accountInfo,
@@ -121,10 +144,19 @@ module.exports = async (req, res) => {
     tag: tag,
     addressValid: addressValid,
     tagRequired: tagRequired,
-    tagValid: !tagRequired || (tagRequired && tag && tag !== null && tag > 0),
+    tagValid: tagValid,
     accountActivated: accountActivated,
     accountNameInfo: accountNameInfo,
+    incomingTxCountWithTag: incomingTxCountWithTag,
+    doNotSendXrp: doNotSendXrp,
     valid: valid
+  }
+
+  if (valid) {
+    req.session.xrpl_destination = {
+      account: account,
+      tag: tag
+    }
   }
 
   res.json({ message: message, trusted: req.ipTrusted, exception: exception, response: data })
