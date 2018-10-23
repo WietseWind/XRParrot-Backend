@@ -16,16 +16,6 @@ module.exports = async (req, res) => {
   let doNotSendXrp = false
   let incomingTxCountWithTag = null
 
-  // fetch('https://www.google.com/recaptcha/api/siteverify', { method: 'POST', body: form })
-  //   .then(res => res.json())
-  //   .then(json => {
-  //     console.log(`-- Captcha Response ${json.score || 0} (${json.success ? 'OK' : 'ERR'}) @ ${req.session.id}`)
-  //     if (json.success && json.score > 0.5) {
-  //       req.session.captcha = true
-  //     }
-  //     res.json({ message: 'Captcha received', trusted: req.ipTrusted, response: json })
-  //   })
-
   if (addressValid) {
     await new Promise(resolve => {
       const Server = 'rippled.xrptipbot.com'
@@ -152,11 +142,15 @@ module.exports = async (req, res) => {
     valid: valid
   }
 
-  if (valid) {
-    req.session.xrpl_destination = {
+  if (valid && (req.session.captcha || false)) {
+    req.session.step = 1
+    req.session.destination = {
       account: account,
       tag: tag
     }
+  } else {
+    console.log(`ERROR {{ INVALID @ ${req.session.id}:${__filename} }}`)
+    valid = false
   }
 
   res.json({ message: message, trusted: req.ipTrusted, exception: exception, response: data })
