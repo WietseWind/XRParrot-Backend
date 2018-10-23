@@ -14,12 +14,13 @@ module.exports = async function (expressApp) {
     res.json({ message: 'Welcome @ XRParrot' })
   })
 
-  // router.post('/hook', require('./api/hook'))
+  router.post('/hook', require('./api/hook'))
 
   router.post('/captcha', require('./api/captcha'))
   router.post('/xrpl-destination', require('./api/xrpl-destination'))
   router.post('/iban', require('./api/iban-check'))
   router.post('/phone', require('./api/phone'))
+  router.post('/finish', require('./api/finish'))
 
   router.post('/', function(req, res, next) {
     if (typeof req.body === 'object' && typeof req.body.name !== 'undefined') {
