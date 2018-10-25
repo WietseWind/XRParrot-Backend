@@ -142,7 +142,7 @@ module.exports = async (req, res) => {
     valid: valid
   }
 
-  if (valid && (req.session.captcha || false)) {
+  if (valid && (req.session.captcha || false) && typeof req.session.betaInvitation !== 'undefined') {
     req.session.step = 1
     req.session.destination = {
       account: account,
@@ -150,7 +150,9 @@ module.exports = async (req, res) => {
     }
   } else {
     console.log(`ERROR {{ INVALID @ ${req.session.id}:${__filename} }}`)
-    valid = false
+    data.valid = false
+    exception = true
+    message = 'Invalid session.'
   }
 
   res.json({ message: message, trusted: req.ipTrusted, exception: exception, response: data })

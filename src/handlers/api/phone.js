@@ -12,6 +12,14 @@ module.exports = (req, res) => {
   //   }
   //   console.log(data)
   // })
+
+  if (typeof req.session.source === 'undefined' || typeof req.session.captcha === 'undefined' || typeof req.session.destination === 'undefined') {
+    console.log(`ERROR {{ INVALID @ ${req.session.id}:${__filename} }}`)
+    return res.json(Object.assign({}, {
+      invalidNo: true,
+      error: 'Invalid session: not all previous steps are completed.'
+    }))
+  }
   
   let phoneNumber
 
