@@ -48,6 +48,6 @@ module.exports = (req, res) => {
   res.json({ 
     message: 'Hook received', 
     trusted: req.ipTrusted,
-    inc: inc
+    // inc: inc
   })
 }
