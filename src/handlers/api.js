@@ -15,6 +15,8 @@ module.exports = async function (expressApp) {
   })
 
   router.post('/hook', require('./api/hook'))
+  
+  router.post('/beta', require('./api/beta'))
 
   router.post('/captcha', require('./api/captcha'))
   router.post('/xrpl-destination', require('./api/xrpl-destination'))
