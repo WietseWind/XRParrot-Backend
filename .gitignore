@@ -3,3 +3,4 @@
 .DS_store
 /db/
 /node_modules/
+/deploy.sh
