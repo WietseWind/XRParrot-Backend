@@ -18,6 +18,7 @@ module.exports = async (req, res) => {
     })
   }).then(r => {
     req.session.betaInvitation = true
+    req.session.betaInvitationCode = code
     res.json(r)
   }).catch(r => {
     console.log('BETA CODE ERROR', r.message)
