@@ -2,6 +2,9 @@ const ipRange = require("ip-range-check")
 
 const get = async (req, res) => {
   const trusted = ipRange(req.remoteAddress, req.config.platformIps || "127.0.0.1")
+  if (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || '')) {
+    return res.status(403).json({ error: true, message: '403. Nope.' })
+  }
   await new Promise((resolve, reject) => {
     if (trusted) {
       req.mongo.collection('orders')
@@ -36,6 +39,9 @@ const get = async (req, res) => {
 
 const set = async (req, res) => {
   const trusted = ipRange(req.remoteAddress, req.config.platformIps || "127.0.0.1")
+  if (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || '')) {
+    return res.status(403).json({ error: true, message: '403. Nope.' })
+  }
   await new Promise((resolve, reject) => {
     return reject(new Error('Nada.'))
   }).then(orders => {

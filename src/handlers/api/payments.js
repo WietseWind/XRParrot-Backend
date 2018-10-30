@@ -2,6 +2,9 @@ const ipRange = require("ip-range-check")
 
 const cursor = async (req, res) => {
   const trusted = ipRange(req.remoteAddress, req.config.platformIps || "127.0.0.1")
+  if (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || '')) {
+    return res.status(403).json({ error: true, message: '403. Nope.' })
+  }
   await new Promise((resolve, reject) => {
     if (trusted) {
       req.mongo.collection('payments')
@@ -32,6 +35,9 @@ const cursor = async (req, res) => {
 
 const get = async (req, res) => {
   const trusted = ipRange(req.remoteAddress, req.config.platformIps || "127.0.0.1")
+  if (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || '')) {
+    return res.status(403).json({ error: true, message: '403. Nope.' })
+  }
   await new Promise((resolve, reject) => {
     if (trusted) {
       req.mongo.collection('payments')
@@ -61,6 +67,9 @@ const get = async (req, res) => {
 }
 
 const set = async (req, res) => {
+  if (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || '')) {
+    return res.status(403).json({ error: true, message: '403. Nope.' })
+  }
   const orderMethod = typeof req.orderMethod === 'string' ? req.orderMethod : 'pull'
   const trusted = ipRange(req.remoteAddress || '127.0.0.1', req.config.platformIps || '127.0.0.1')
   await new Promise((resolve, reject) => {
