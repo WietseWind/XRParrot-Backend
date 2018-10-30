@@ -4,14 +4,14 @@ module.exports = (req, res) => {
     console.log(`    --> [[[ HOOK TRUSTED ]]]`);
     
     try {
-      console.log('Hook [./orders] passthrough', require('./orders').registerPayments.set({
+      console.log('Hook [./payments] passthrough', require('./payments').set({
         orderMethod: 'push',
         body: [ req.body.NotificationUrl.object.Payment ],
         config: {},
         mongo: req.mongo
       }))
     } catch (e) {
-      console.log('<< orders.registerPayments.set ERROR: [' + e.toString() + '] >>')
+      console.log('<< payments.set ERROR: [' + e.toString() + '] >>')
     }
     
     req.mongo.collection('hook').insertOne({

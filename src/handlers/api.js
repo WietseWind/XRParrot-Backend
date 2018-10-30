@@ -24,8 +24,10 @@ module.exports = async function (expressApp) {
 
   router.get('/orders', require('./api/orders').get)
   router.post('/orders', require('./api/orders').set)
-  router.get('/register-payments', require('./api/orders').registerPayments.get)
-  router.post('/register-payments', require('./api/orders').registerPayments.set)
+
+  router.get('/payment-cursor', require('./api/payments').cursor)
+  router.get('/payments', require('./api/payments').get)
+  router.post('/payments', require('./api/payments').set)
 
   router.post('/', function(req, res, next) {
     if (typeof req.body === 'object' && typeof req.body.name !== 'undefined') {
