@@ -4,11 +4,11 @@ module.exports = (req, res) => {
     console.log(`    --> [[[ HOOK TRUSTED ]]]`);
     
     try {
-      require('./orders').registerPayments.set({
+      console.log('Hook [./orders] passthrough', require('./orders').registerPayments.set({
         orderMethod: 'push',
-        body: req.body.NotificationUrl.object.Payment,
+        body: [ req.body.NotificationUrl.object.Payment ],
         config: {}
-      })
+      }))
     } catch (e) {
       console.log('<< orders.registerPayments.set ERROR: [' + e.toString() + '] >>')
     }

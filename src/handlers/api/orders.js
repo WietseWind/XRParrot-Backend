@@ -119,6 +119,8 @@ const registerPayments = {
     }).catch(e => {
       if (res instanceof Object) {
         res.json({ error: true, message: e.toString() })
+      } else {
+        console.log('! Insert hook-payment error:', e.toString())
       }
       return false
     })
