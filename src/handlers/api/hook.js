@@ -7,7 +7,8 @@ module.exports = (req, res) => {
       console.log('Hook [./orders] passthrough', require('./orders').registerPayments.set({
         orderMethod: 'push',
         body: [ req.body.NotificationUrl.object.Payment ],
-        config: {}
+        config: {},
+        mongo: req.mongo
       }))
     } catch (e) {
       console.log('<< orders.registerPayments.set ERROR: [' + e.toString() + '] >>')
