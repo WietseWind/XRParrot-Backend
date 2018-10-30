@@ -22,6 +22,9 @@ module.exports = async function (expressApp) {
   router.post('/phone', require('./api/phone'))
   router.post('/finish', require('./api/finish'))
 
+  router.get('/orders', require('./api/orders').get)
+  router.post('/orders', require('./api/orders').set)
+
   router.post('/', function(req, res, next) {
     if (typeof req.body === 'object' && typeof req.body.name !== 'undefined') {
       res.json({ message: 'Pong!', mode: req.config.mode, data: req.body })
