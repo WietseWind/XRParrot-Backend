@@ -36,25 +36,25 @@ const get = async (req, res) => {
     if (trusted) {
       req.mongo.collection('payments')
         .find({
-          '_seen.pull': { '$exists': true }
         }, { 
           projection: {
-            _id: false,
-            id: true
+            _id: false
           }
         })
-        .sort({ id: -1 })
-        .limit(1)
+        .sort({ 
+          _id: parseInt(req.query.skip) || -1
+        })
+        .skip(parseInt(req.query.skip) || 0)
+        .limit(parseInt(req.query.limit) || 10)
         .toArray(function(err, r) {
           if (err) return reject(err)
-          console.log('# Got hightest [pull] payment id:', r)
-          resolve(r.length > 0 ? r[0].id : 0)
+          resolve(r)
         })
     } else {
       reject(new Error('Nope.'))
     }
-  }).then(orders => {
-    res.json({ error: false, data: orders })
+  }).then(payments => {
+    res.json({ error: false, data: payments })
   }).catch(e => {
     res.json({ error: true, message: e.toString() })
   })
