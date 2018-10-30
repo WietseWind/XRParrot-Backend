@@ -42,7 +42,7 @@ const get = async (req, res) => {
           }
         })
         .sort({ 
-          _id: parseInt(req.query.skip) || -1
+          id: parseInt(req.query.skip) || -1
         })
         .skip(parseInt(req.query.skip) || 0)
         .limit(parseInt(req.query.limit) || 10)
