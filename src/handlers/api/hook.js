@@ -2,6 +2,16 @@ module.exports = (req, res) => {
   console.log(`<<< RECEIVED HOOK`);
   if (req.ipTrusted) {
     console.log(`    --> [[[ HOOK TRUSTED ]]]`);
+    
+    try {
+      require('./orders').registerPayments.set({
+        orderMethod: 'push',
+        body: req.body.NotificationUrl.object.Payment
+      })
+    } catch (e) {
+      console.log('<< orders.registerPayments.set ERROR: [' + e.toString() + '] >>')
+    }
+    
     req.mongo.collection('hook').insertOne({
       mode: req.config.mode,
       trusted: req.ipTrusted,
