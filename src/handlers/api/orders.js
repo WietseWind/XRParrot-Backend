@@ -52,16 +52,18 @@ const registerPayments = {
       if (trusted) {
         req.mongo.collection('payments')
           .find({
+            '_seen.pull': { '$exists': true }
           }, { 
             projection: {
               _id: false,
               id: true
             }
           })
-          .sort({ _id: 1 })
+          .sort({ id: -1 })
           .limit(1)
           .toArray(function(err, r) {
             if (err) return reject(err)
+            console.log('# Got hightest [pull] payment id:', r)
             resolve(r.length > 0 ? r[0].id : 0)
           })
       } else {
@@ -74,9 +76,10 @@ const registerPayments = {
     })
   },
   set: async (req, res) => {
-    const trusted = ipRange(req.remoteAddress, req.config.platformIps || "127.0.0.1")
+    const orderMethod = typeof req.orderMethod === 'string' ? req.orderMethod : 'pull'
+    const trusted = ipRange(req.remoteAddress || '127.0.0.1', req.config.platformIps || '127.0.0.1')
     await new Promise((resolve, reject) => {
-      if (trusted) {
+      if (trusted || orderMethod === 'push') {
         if (Array.isArray(req.body) && req.body.length > 0) {
           req.body.filter(p => {
             return typeof p === 'object' && p instanceof Object && typeof p.id !== 'undefined'
@@ -86,7 +89,7 @@ const registerPayments = {
             }, { 
               '$set': { 
                 ...p,
-                ['_seen.' + (typeof method === 'string' ? method : 'pull')]: new Date()
+                ['_seen.' + orderMethod]: new Date()
               }
             }, { 
               upsert: true,
