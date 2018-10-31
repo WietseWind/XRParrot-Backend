@@ -5,12 +5,23 @@ const cursor = async (req, res) => {
   if (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || '')) {
     return res.status(403).json({ error: true, message: '403. Nope.' })
   }
+  let query = {
+    '_seen.pull': { '$exists': true }
+  }
+  const paymentId = req.params.payment || null
+  if (paymentId !== null) {
+    query = {
+      '$or': [
+        { 'counterparty_alias.iban': paymentId },
+        { 'description': (orderId + '') },
+        { 'description': { '$regex': (orderId + '') } },
+      ]
+    }
+  }
   await new Promise((resolve, reject) => {
     if (trusted) {
       req.mongo.collection('payments')
-        .find({
-          '_seen.pull': { '$exists': true }
-        }, { 
+        .find(query, { 
           projection: {
             _id: false,
             id: true
