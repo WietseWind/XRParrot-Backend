@@ -82,18 +82,18 @@ const getBetaCodes = async (req, res) => {
   })
 }
 
-const set = async (req, res) => {
-  const trusted = ipRange(req.remoteAddress, req.config.platformIps || "127.0.0.1")
-  if (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || '')) {
-    return res.status(403).json({ error: true, message: '403. Nope.' })
-  }
-  await new Promise((resolve, reject) => {
-    return reject(new Error('Nada.'))
-  }).then(orders => {
-    res.json({ error: false, data: orders })
-  }).catch(e => {
-    res.json({ error: true, message: e.toString() })
-  })
-}
+// const set = async (req, res) => {
+//   const trusted = ipRange(req.remoteAddress, req.config.platformIps || "127.0.0.1")
+//   if (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || '')) {
+//     return res.status(403).json({ error: true, message: '403. Nope.' })
+//   }
+//   await new Promise((resolve, reject) => {
+//     return reject(new Error('Nada.'))
+//   }).then(orders => {
+//     res.json({ error: false, data: orders })
+//   }).catch(e => {
+//     res.json({ error: true, message: e.toString() })
+//   })
+// }
 
-module.exports = { get, set, getBetaCodes }
+module.exports = { get, /* set,*/ getBetaCodes }
