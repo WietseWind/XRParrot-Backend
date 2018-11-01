@@ -35,7 +35,13 @@ const get = async (req, res) => {
         .limit(parseInt(req.query.limit) || 10)
         .toArray(function(err, r) {
           if (err) return reject(err)
-          resolve(r)
+          resolve(r.map(order => {
+            return {
+              [order.orderIds.string]: order
+            }
+          }).reduce((orders, order) => {
+            return Object.assign(orders, order)
+          }, {}))
         })
     } else {
       reject(new Error('Nope.'))
