@@ -1,15 +1,4 @@
-const chars = 'abcdehlkmrtwxyz'.toUpperCase()
-
-const to = (decimal) => {
-  let out = ''
-  while (true) {
-    let remainder = (decimal - 1) % chars.length
-    out = chars[remainder] + out;
-    decimal = Math.floor((decimal - 1) / chars.length);
-    if (decimal === 0) break
-  }
-  return out;
-}
+const { to } = require('../helpers/orderDescriptionEncoder')
 
 module.exports = async (req, ud) => {
   const existingOrder = await new Promise((resolve, reject) => {
