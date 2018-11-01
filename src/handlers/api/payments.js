@@ -66,7 +66,7 @@ const get = async (req, res) => {
         .limit(parseInt(req.query.limit) || 10)
         .toArray(function(err, r) {
           if (err) return reject(err)
-          resolve(r.map(payment => {
+          resolve(Promise.all(r.map(async payment => {
             let _validation = {}
             let _paymentIdentification
 
@@ -105,11 +105,39 @@ const get = async (req, res) => {
             } catch (e) {
               _validation.internalError = e.message
             }
+            
+            let _order
+            if (typeof payment._approved === 'undefined') {
+              // Only do a hard-lookup for not yet approved orders
+              if (Object.keys(_validation).length === 0 || (Object.keys(_validation).length === 1 && [ 'push', 'pull' ].indexOf(Object.keys(_validation)[0]) > -1)) {
+                // No errors or soft error (push / pull)
+                let orderId = _paymentIdentification[1] + '.' + _paymentIdentification[2].toUpperCase()
+                // orderId = '1408.HCXD'
+                await require('./orders').get(Object.assign(req, { params: { order: orderId } }), { json: r => {
+                  if (r.data instanceof Object && Object.values(r.data).length > 0) {
+                    _order = Object.values(r.data)[0]
+                    if (typeof _order.moment === 'undefined') {
+                      _order = null
+                      _validation.orderInvalid = `Order [${orderId}] invalid`
+                    } else {
+                      if (_order.details.bank.toUpperCase() !== payment.counterparty_alias.iban.toUpperCase()) {
+                        _order = null
+                        _validation.bankAccountMismatch = `Order for IBAN ${_order.details.bank}, payment received from ${payment.counterparty_alias.iban}`
+                      }
+                    }
+                  } else {
+                    _validation.orderNotFound = 'Order not found.'
+                  }
+                }})
+              }
+            }
+
             return Object.assign(payment, {
               _validation: _validation,
-              _paymentIdentification: _paymentIdentification
+              _paymentIdentification: _paymentIdentification,
+              _order: _order
             })
-          }))
+          })))
         })
     } else {
       reject(new Error('Nope.'))
