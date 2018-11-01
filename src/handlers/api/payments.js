@@ -1,4 +1,5 @@
 const ipRange = require("ip-range-check")
+const { to, from } = require('../../helpers/orderDescriptionEncoder')
 
 const cursor = async (req, res) => {
   const trusted = ipRange(req.remoteAddress, req.config.platformIps || "127.0.0.1")
@@ -65,7 +66,50 @@ const get = async (req, res) => {
         .limit(parseInt(req.query.limit) || 10)
         .toArray(function(err, r) {
           if (err) return reject(err)
-          resolve(r)
+          resolve(r.map(payment => {
+            let _validation = {}
+            let _paymentIdentification
+
+            try {
+              if (parseFloat(payment.amount.value) < 1) {
+                _validation.amount = 'Payment amount below 1 EUR'
+              }
+              if (payment.amount.currency !== 'EUR') {
+                _validation.currency = 'Payment currency not EUR'
+              }
+              if (typeof payment._seen.push === 'undefined') {
+                _validation.push = 'Payment not PUSH-verified (by bank)'
+              }
+              if (typeof payment._seen.pull === 'undefined') {
+                _validation.pull = 'Payment not PULL-verified (backend, from bank)'
+              }
+              
+              _paymentIdentification = payment.description.match(/([0-9]{4,})[ \.\/\-]*([a-zA-Z]{3,})/)
+              if (!_paymentIdentification) {
+                _validation.identificationMissing = 'No payment identifier (description) found'
+              } else {
+                let textId = to(_paymentIdentification[1])
+                let textChecksum = to(_paymentIdentification[1] % 13)
+                let userTextId = _paymentIdentification[2].toUpperCase().slice(0, -1)
+                let userTextChecksum = _paymentIdentification[2].toUpperCase().slice(-1)
+                if (_paymentIdentification[2].toUpperCase() !== textId + textChecksum) {
+                  _validation.identificationMismatch = `Payment ID Text [${textId}${textChecksum}] doesn't match Payment ID Int [${_paymentIdentification[1]}]`
+                }
+                if (userTextChecksum !== to(from(userTextId) % 13)) {
+                  _validation.identificationChecksum = 'Invalid Payment ID Checksum'
+                }
+                if (from(userTextId) !== parseInt(_paymentIdentification[1])) {
+                  _validation.identificationRedundancyMismatch = `Payment ID is [${_paymentIdentification[1]}], but Redundancy Text results in [${from(userTextId)}]`
+                }
+              }
+            } catch (e) {
+              _validation.internalError = e.message
+            }
+            return Object.assign(payment, {
+              _validation: _validation,
+              _paymentIdentification: _paymentIdentification
+            })
+          }))
         })
     } else {
       reject(new Error('Nope.'))
