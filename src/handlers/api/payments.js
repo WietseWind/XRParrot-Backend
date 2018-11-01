@@ -110,7 +110,7 @@ const get = async (req, res) => {
             if (typeof payment._approved === 'undefined') {
               // Only do a hard-lookup for not yet approved orders
               if (Object.keys(_validation).length === 0 || (Object.keys(_validation).length === 1 && [ 'push', 'pull' ].indexOf(Object.keys(_validation)[0]) > -1)) {
-                // No errors or soft error (push / pull)
+                // NO errors or just a SOFT error (push / pull), so a order lookup is required
                 let orderId = _paymentIdentification[1] + '.' + _paymentIdentification[2].toUpperCase()
                 // orderId = '1408.HCXD'
                 await require('./orders').get(Object.assign(req, { params: { order: orderId } }), { json: r => {
@@ -203,5 +203,62 @@ const set = async (req, res) => {
   })
 }
 
+const approve = async (req, res) => {
+  const orderMethod = typeof req.orderMethod === 'string' ? req.orderMethod : 'aprove'
+  if (orderMethod !== 'internal' && (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || ''))) {
+    return res.status(403).json({ error: true, message: '403. Nope.' })
+  }
+  const trusted = ipRange(req.remoteAddress || '127.0.0.1', req.config.platformIps || '127.0.0.1')
+  await new Promise((resolve, reject) => {
+    if (trusted || orderMethod === 'internal') {
+      if (Array.isArray(req.body) && req.body.length > 0) {
+        req.body.filter(p => {
+          return typeof p === 'object' && p instanceof Object && typeof p.id !== 'undefined'
+        }).forEach(p => {
+          return req.mongo.collection('payments').updateOne({ 
+            id: p.id,
+            _approved: { '$exists': false }
+          }, { 
+            '$set': { 
+              _approved: {
+                ip: req.remoteAddress
+              },
+              [ '_seen.' + orderMethod ]: new Date()
+            }
+          }, { 
+            upsert: false,
+            writeConcern: {
+              w: 'majority',
+              j: true
+            }
+          }, function(err, r) {
+            if (err) {
+              console.log('DB[PAYMENT APPROVAL] >> ERROR', err.toString())
+              reject(err)
+            } else {
+              console.log(':: PAYMENT APPROVED ', p.id, { upsertedCount: r.upsertedCount, matchedCount: r.matchedCount, modifiedCount: r.modifiedCount, upsertedId: r.upsertedId })
+            }
+          })
+        })
+      }
+      resolve(true)
+    } else {
+      reject(new Error('Nah.'))
+    }
+  }).then(orders => {
+    if (res instanceof Object) {
+      res.json({ error: false, data: orders })
+    }
+    return true
+  }).catch(e => {
+    if (res instanceof Object) {
+      res.json({ error: true, message: e.toString() })
+    } else {
+      console.log('! Insert hook-payment-approval error:', e.toString())
+    }
+    return false
+  })
+}
 
-module.exports = { get, cursor, set }
+
+module.exports = { get, cursor, set, approve }
