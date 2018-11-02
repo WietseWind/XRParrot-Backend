@@ -52,9 +52,12 @@ const get = async (req, res) => {
   }
   await new Promise((resolve, reject) => {
     if (trusted) {
+      let query = {}
+      if (typeof req._processorderId !== 'undefined') {
+        query = { id: req._processorderId }
+      }
       req.mongo.collection('payments')
-        .find({
-        }, { 
+        .find(query, { 
           projection: {
             _id: false
           }
@@ -107,7 +110,7 @@ const get = async (req, res) => {
             }
             
             let _order
-            if (typeof payment._approved === 'undefined') {
+            if (typeof payment._approved === 'undefined' || typeof req._processorderId !== 'undefined') {
               // Only do a hard-lookup for not yet approved orders
               if (Object.keys(_validation).length === 0 || (Object.keys(_validation).length === 1 && [ 'push', 'pull' ].indexOf(Object.keys(_validation)[0]) > -1)) {
                 // NO errors or just a SOFT error (push / pull), so a order lookup is required
@@ -204,7 +207,7 @@ const set = async (req, res) => {
 }
 
 const approve = async (req, res) => {
-  const orderMethod = typeof req.orderMethod === 'string' ? req.orderMethod : 'aprove'
+  const orderMethod = typeof req.orderMethod === 'string' ? req.orderMethod : 'approve'
   if (orderMethod !== 'internal' && (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || ''))) {
     return res.status(403).json({ error: true, message: '403. Nope.' })
   }
@@ -260,5 +263,71 @@ const approve = async (req, res) => {
   })
 }
 
+const process = async (req, res) => {
+  let reRoutedToOrder = false
+  const orderMethod = typeof req.orderMethod === 'string' ? req.orderMethod : 'process'
+  if (orderMethod !== 'internal' && (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || ''))) {
+    return res.status(403).json({ error: true, message: '403. Nope.' })
+  }
+  const trusted = ipRange(req.remoteAddress || '127.0.0.1', req.config.platformIps || '127.0.0.1')
+  await new Promise((resolve, reject) => {
+    if (trusted || orderMethod === 'internal') {
+      req.mongo.collection('payments')
+        .find({
+          _approved: { '$exists': true },
+          _processed: { '$exists': false }
+        }, { 
+          projection: { _id: false, id: true }
+        })
+        .sort({ 
+          id: 1
+        })
+        .skip(0)
+        .limit(1)
+        .toArray(function(err, r) {
+          if (err) return reject(err)
+          try {
+            if (r && r.length > 0) {
+              // Do update
+              req.mongo.collection('payments').updateOne({ id: r[0].id }, {
+                // '$set': { _processed: new Date(), [ '_seen.' + 'processed' ]: new Date() }
+                '$set': { _fake_processed: new Date(), [ '_seen.' + 'processed' ]: new Date() }
+              }, { upsert: false, writeConcern: { w: 'majority', j: true } }, function(err, u) {
+                if (err) {
+                  console.log('DB[PAYMENT PRE-SENDING] >> ERROR', err.toString())
+                  reject(err)
+                } else {
+                  console.log(':: PAYMENT PRE-SENDING UPDATE ', r[0].id, { upsertedCount: u.upsertedCount, matchedCount: u.matchedCount, modifiedCount: u.modifiedCount, upsertedId: u.upsertedId })
+                  reRoutedToOrder = true
+                  req._processorderId = r[0].id
+                  get(req, res).then(() => {
+                    resolve()
+                  })
+                }
+              })              
+            } else{
+              reject(new Error('No data'))
+            }
+          } catch (e) {
+            reject(e)
+          }
+        })
+    } else {
+      reject(new Error('Nah.'))
+    }
+  }).then(payment => {
+    if (res instanceof Object && !reRoutedToOrder) {
+      res.json({ error: false, data: payment })
+    }
+    return true
+  }).catch(e => {
+    if (res instanceof Object && !reRoutedToOrder) {
+      res.json({ error: true, message: e.toString() })
+    } else {
+      console.log('! Insert hook-payment-approval error:', e.toString())
+    }
+    return false
+  })
+}
 
-module.exports = { get, cursor, set, approve }
+module.exports = { get, cursor, set, approve, approve, process }
