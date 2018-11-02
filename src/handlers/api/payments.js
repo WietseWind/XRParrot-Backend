@@ -1,5 +1,6 @@
 const ipRange = require("ip-range-check")
 const { to, from } = require('../../helpers/orderDescriptionEncoder')
+const messagebirdApi = require('messagebird')
 
 const cursor = async (req, res) => {
   const trusted = ipRange(req.remoteAddress, req.config.platformIps || "127.0.0.1")
@@ -347,10 +348,26 @@ const callback = async (req, res) => {
         } else {
           const storageResults = { upsertedCount: u.upsertedCount, matchedCount: u.matchedCount, modifiedCount: u.modifiedCount, upsertedId: u.upsertedId }
           console.log(':: PAYMENT CALLBACK UPDATE ', paymentId, storageResults)
+          const aOk = (storageResults.matchedCount === 1 && storageResults.modifiedCount === 1) && typeof req.body.error !== 'undefined' && !req.body.error && typeof req.body.xrplTxResult !== 'undefined' && req.body.xrplTxResult.hash.match(/^[A-F0-9]+$/)
           resolve({
             payment: paymentId,
-            result: (storageResults.matchedCount === 1 && storageResults.modifiedCount === 1)
+            result: aOk
           })
+          if (aOk) {
+            const messagebird = messagebirdApi(req.config.messagebirdKey)
+            const msgBody = `Woohoo! Your payment (${req.body.amounts.input}EUR, Payout: ${req.body.amounts.payout}EUR) came in. Transaction hash: ${req.body.xrplTxResult.hash}\n\n- XRParrot.com`
+            const numberFormatted = req.body.order.details.phone
+            messagebird.messages.create({
+              originator: 'XRParrot',
+              recipients: [ numberFormatted ],
+              body: msgBody
+            }, function (err, r) {
+              if (err) {
+                console.log(`<< TX RESULT TEXT MESSAGE: Error sending text message to ${numberFormatted}`)
+              }
+              console.log(`Confirmation sent to: ${numberFormatted}\n>> ${msgBody}`)
+            })
+          }
         }
       })              
     } else {
