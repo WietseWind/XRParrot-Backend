@@ -33,6 +33,7 @@ module.exports = async function (expressApp) {
   router.post('/payments', require('./api/payments').set)
   router.post('/payments/approve', require('./api/payments').approve)
   router.post('/payments/process-payout', require('./api/payments').process)
+  router.post('/payment/:payment', require('./api/payments').callback)
 
   router.post('/', function(req, res, next) {
     if (typeof req.body === 'object' && typeof req.body.name !== 'undefined') {

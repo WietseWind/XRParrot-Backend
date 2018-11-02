@@ -290,8 +290,7 @@ const process = async (req, res) => {
             if (r && r.length > 0) {
               // Do update
               req.mongo.collection('payments').updateOne({ id: r[0].id }, {
-                // '$set': { _processed: new Date(), [ '_seen.' + 'processed' ]: new Date() }
-                '$set': { _fake_processed: new Date(), [ '_seen.' + 'processed' ]: new Date() }
+                '$set': { _processed: new Date(), [ '_seen.' + 'processed' ]: new Date() }
               }, { upsert: false, writeConcern: { w: 'majority', j: true } }, function(err, u) {
                 if (err) {
                   console.log('DB[PAYMENT PRE-SENDING] >> ERROR', err.toString())
@@ -330,4 +329,46 @@ const process = async (req, res) => {
   })
 }
 
-module.exports = { get, cursor, set, approve, approve, process }
+const callback = async (req, res) => {
+  const paymentId = req.params.payment || null
+  const orderMethod = typeof req.orderMethod === 'string' ? req.orderMethod : 'process'
+  if (orderMethod !== 'internal' && (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || ''))) {
+    return res.status(403).json({ error: true, message: '403. Nope.' })
+  }
+  const trusted = ipRange(req.remoteAddress || '127.0.0.1', req.config.platformIps || '127.0.0.1')
+  await new Promise((resolve, reject) => {
+    if ((trusted || orderMethod === 'internal') && parseInt(paymentId) === req.body.paymentId && !isNaN(parseInt(req.body.paymentId))) {
+      req.mongo.collection('payments').updateOne({ id: req.body.paymentId }, {
+        '$set': { _sent: req.body, [ '_seen.' + 'sent' ]: new Date() }
+      }, { upsert: false, writeConcern: { w: 'majority', j: true } }, function(err, u) {
+        if (err) {
+          console.log('DB[PAYMENT CALLBACK] >> ERROR', err.toString())
+          reject(err)
+        } else {
+          const storageResults = { upsertedCount: u.upsertedCount, matchedCount: u.matchedCount, modifiedCount: u.modifiedCount, upsertedId: u.upsertedId }
+          console.log(':: PAYMENT CALLBACK UPDATE ', paymentId, storageResults)
+          resolve({
+            payment: paymentId,
+            result: (storageResults.matchedCount === 1 && storageResults.modifiedCount === 1)
+          })
+        }
+      })              
+    } else {
+      reject(new Error('Nah.'))
+    }
+  }).then(payment => {
+    if (res instanceof Object) {
+      res.json({ error: false, data: payment })
+    }
+    return true
+  }).catch(e => {
+    if (res instanceof Object) {
+      res.json({ error: true, message: e.toString() })
+    } else {
+      console.log('! Insert payment-callback error:', e.toString())
+    }
+    return false
+  })
+}
+
+module.exports = { get, cursor, set, approve, approve, process, callback }
