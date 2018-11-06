@@ -1,12 +1,12 @@
 const crypto = require('crypto')
 
 module.exports = async (req, res) => {
-  const verifyInput = (req.body instanceof Object && typeof req.body.verify !== 'undefined' ? req.body.verify + '' : '')
+  const verifyInput = (typeof req.body !== 'undefined' && req.body instanceof Object && typeof req.body.verify !== 'undefined' ? req.body.verify + '' : '')
   let valid = false
   let msg = ''
   let details
 
-  if (typeof req.session.phone !== 'undefined' && req.session.phone.length > 0) {
+  if (typeof req.session !== 'undefined' && typeof req.session.phone !== 'undefined' && req.session.phone.length > 0) {
     if ((req.session.codes || []).indexOf(verifyInput) > -1) {
       req.session.verified = true
       if (typeof req.session.verifiedPhone === 'undefined') {
@@ -60,18 +60,22 @@ module.exports = async (req, res) => {
         }
       }).then(() => {
         // req.session.order = orderIds
+        console.log('-- ORDER INSERTED')
       }).catch(err => {
         console.log('DB[ORDER] >> ERROR', err.toString())
         valid = false
         msg = `Sorry, your order cannot be processed at this moment. Please try again later.`
       })
+    } else {
+      console.log('NOT VERIFIED')
     }
   }
-
-  res.json(Object.assign({}, {
+  const jsonResponse = Object.assign({}, {
     input: verifyInput,
     valid: valid,
     msg: msg,
     details: details
-  }))
+  })
+  console.log('<FINISH>', jsonResponse)
+  res.json(jsonResponse)
 }
