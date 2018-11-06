@@ -1,7 +1,7 @@
 const ibantools = require('ibantools')
 
 module.exports = (req, res) => {
-  const iban = ibantools.electronicFormatIBAN(req.body instanceof Object && typeof req.body.iban !== 'undefined' ? req.body.iban : '')
+  const iban = ibantools.electronicFormatIBAN(req.body instanceof Object && typeof req.body.iban !== 'undefined' ? req.body.iban.replace(/[^a-zA-Z0-9]/gi, '') : '')
   let valid = ibantools.isValidIBAN(iban)
 
   if (valid && (req.session.captcha || false) && ((req.session.step || -1) > 0)) {

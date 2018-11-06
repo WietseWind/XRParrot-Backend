@@ -1,7 +1,7 @@
 const crypto = require('crypto')
 
 module.exports = async (req, res) => {
-  const verifyInput = (typeof req.body !== 'undefined' && req.body instanceof Object && typeof req.body.verify !== 'undefined' ? req.body.verify + '' : '')
+  const verifyInput = (typeof req.body !== 'undefined' && req.body instanceof Object && typeof req.body.verify !== 'undefined' ? req.body.verify + '' : '').replace(/[^0-9]/gi, '')
   let valid = false
   let msg = ''
   let details

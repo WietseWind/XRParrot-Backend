@@ -6,8 +6,8 @@ module.exports = async (req, res) => {
   let message = 'XPRL Destination'
   let exception = false
 
-  let account = req.body.account || ''
-  let tag = req.body.tag ? (parseInt(req.body.tag) || null) : null
+  let account = (req.body.account || '').split(':').reverse()[0].replace(/[^a-zA-Z0-9]/gi, '')
+  let tag = req.body.tag ? (parseInt(req.body.tag.replace(/[^0-9]/gi, '')) || null) : null
   let addressValid = rippleAddressCodec.isValidAddress(account)
   let accountInfo = {}
   let accountFlags = []

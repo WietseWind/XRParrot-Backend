@@ -1,5 +1,5 @@
 module.exports = async (req, res) => {
-  const code = (req.body instanceof Object && typeof req.body.code !== 'undefined' ? req.body.code + '' : '')
+  const code = (req.body instanceof Object && typeof req.body.code !== 'undefined' ? req.body.code + '' : '').replace(/[^0-9]/gi, '')
   let valid = false
 
   await new Promise((resolve, reject) => {
