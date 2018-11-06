@@ -335,6 +335,7 @@ const process = async (req, res) => {
       req.mongo.collection('payments')
         .find({
           _approved: { '$exists': true },
+          _refunded: { '$exists': false },
           _processed: { '$exists': false }
         }, { 
           projection: { _id: false, id: true }
@@ -357,6 +358,73 @@ const process = async (req, res) => {
                   reject(err)
                 } else {
                   console.log(':: PAYMENT PRE-SENDING UPDATE ', r[0].id, { upsertedCount: u.upsertedCount, matchedCount: u.matchedCount, modifiedCount: u.modifiedCount, upsertedId: u.upsertedId })
+                  reRoutedToOrder = true
+                  req._processorderId = r[0].id
+                  get(req, res).then(() => {
+                    resolve()
+                  })
+                }
+              })              
+            } else{
+              reject(new Error('No data'))
+            }
+          } catch (e) {
+            reject(e)
+          }
+        })
+    } else {
+      reject(new Error('Nah.'))
+    }
+  }).then(payment => {
+    if (res instanceof Object && !reRoutedToOrder) {
+      res.json({ error: false, data: payment })
+    }
+    return true
+  }).catch(e => {
+    if (res instanceof Object && !reRoutedToOrder) {
+      res.json({ error: true, message: e.toString() })
+    } else {
+      console.log('! Insert hook-payment-approval error:', e.toString())
+    }
+    return false
+  })
+}
+
+const processRefund = async (req, res) => {
+  let reRoutedToOrder = false
+  const orderMethod = typeof req.orderMethod === 'string' ? req.orderMethod : 'process'
+  if (orderMethod !== 'internal' && (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || ''))) {
+    return res.status(403).json({ error: true, message: '403. Nope.' })
+  }
+  const trusted = ipRange(req.remoteAddress || '127.0.0.1', req.config.platformIps || '127.0.0.1')
+  await new Promise((resolve, reject) => {
+    if (trusted || orderMethod === 'internal') {
+      req.mongo.collection('payments')
+        .find({
+          _refunded: { '$exists': true },
+          _approved: { '$exists': false },
+          _processed: { '$exists': false }
+        }, { 
+          projection: { _id: false, id: true }
+        })
+        .sort({ 
+          id: 1
+        })
+        .skip(0)
+        .limit(1)
+        .toArray(function(err, r) {
+          if (err) return reject(err)
+          try {
+            if (r && r.length > 0) {
+              // Do update
+              req.mongo.collection('payments').updateOne({ id: r[0].id }, {
+                '$set': { _processed: new Date(), [ '_seen.' + 'processed' ]: new Date() }
+              }, { upsert: false, writeConcern: { w: 'majority', j: true } }, function(err, u) {
+                if (err) {
+                  console.log('DB[REFUND PRE-SENDING] >> ERROR', err.toString())
+                  reject(err)
+                } else {
+                  console.log(':: REFUND PRE-SENDING UPDATE ', r[0].id, { upsertedCount: u.upsertedCount, matchedCount: u.matchedCount, modifiedCount: u.modifiedCount, upsertedId: u.upsertedId })
                   reRoutedToOrder = true
                   req._processorderId = r[0].id
                   get(req, res).then(() => {
@@ -447,4 +515,4 @@ const callback = async (req, res) => {
   })
 }
 
-module.exports = { get, cursor, set, approve, refund, process, callback }
+module.exports = { get, cursor, set, approve, refund, process, processRefund, callback }
