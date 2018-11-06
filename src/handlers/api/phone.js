@@ -115,9 +115,11 @@ module.exports = (req, res) => {
       }))
     })
   } catch (e) {
-    res.json(Object.assign(response, {
+    const jsonResponse = Object.assign(response, {
       invalidNo: true,
       error: e.message
-    }))
+    })
+    console.log('<<PHONE>>', jsonResponse)
+    res.json(jsonResponse)
   }
 }
