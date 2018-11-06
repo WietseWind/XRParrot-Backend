@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: 'XRPARROT',
     script: 'index.js',
-    watch: true,
+    watch: false,
     ignore_watch: ["node_modules", "db", ".git"],
     env: {
       NODE_ENV: 'development',
