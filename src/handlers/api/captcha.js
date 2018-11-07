@@ -16,6 +16,13 @@ module.exports = (req, res) => {
       if (json.success && json.score > 0.5) {
         req.session.captcha = true
       }
-      res.json({ message: 'Captcha received', trusted: req.ipTrusted, response: json })
+      const order = (req.session.verified || false) ? (req.session.order || '') : null 
+      res.json({ 
+        message: 'Captcha received', 
+        trusted: req.ipTrusted, 
+        response: json, 
+        order: order,
+        transferDetails: order ? { details: req.session.orderDetails } : { details: {} }
+      })
     })
 }

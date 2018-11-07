@@ -31,6 +31,7 @@ module.exports = async (req, res) => {
         if (typeof connection !== 'undefined') {
           connection.close().then(console.log(`-- WSS Connection closed`)).catch(e => console.log(e.message))
         }
+        return
       }
       new xrplClient('wss://' + Server).then(Connection => {
         console.log(`<< WSS: Connected to [ ${Server} ] >>`)
@@ -114,7 +115,7 @@ module.exports = async (req, res) => {
           if (typeof json.error === 'undefined') {
             accountNameInfo = json
           }
-          resolve()
+          return resolve()
         })
         .catch(e => console.log(`BITHOMP API ERROR`, e))
     })

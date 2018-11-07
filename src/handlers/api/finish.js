@@ -29,6 +29,7 @@ module.exports = async (req, res) => {
       // If transfer details not yet generated, generate and return
       const orderIds = await require('../../storage/order')(req, ud)
       console.log('------------', orderIds)
+      req.session.order = orderIds.string
 
       details = {
         bank: req.session.source,
@@ -37,6 +38,8 @@ module.exports = async (req, res) => {
         description: orderIds.string,
         phone: req.session.verifiedPhone
       }
+
+      req.session.orderDetails = details
 
       await new Promise((resolve, reject) => {
         if (orderIds.generated) {
