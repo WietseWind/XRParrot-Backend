@@ -118,7 +118,7 @@ const get = async (req, res) => {
                 let orderId = _paymentIdentification[1] + '.' + _paymentIdentification[2].toUpperCase()
                 // orderId = '1408.HCXD'
                 await require('./orders').get(Object.assign(req, { params: { order: orderId } }), { json: r => {
-                  console.log('FetchOrder>Payment', r)
+                  // console.log('FetchOrder>Payment', r)
                   if (r.data instanceof Object && Object.values(r.data).length > 0) {
                     _order = Object.values(r.data)[0]
                     if (typeof _order.moment === 'undefined') {
@@ -126,8 +126,8 @@ const get = async (req, res) => {
                       _validation.orderInvalid = `Order [${orderId}] invalid`
                     } else {
                       if (_order.details.bank.toUpperCase() !== payment.counterparty_alias.iban.toUpperCase()) {
-                        _order = null
                         _validation.bankAccountMismatch = `Order for IBAN ${_order.details.bank}, payment received from ${payment.counterparty_alias.iban}`
+                        _order = null
                       }
                     }
                   } else {

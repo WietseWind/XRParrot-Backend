@@ -16,8 +16,8 @@ const get = async (req, res) => {
       ]
     }
   }
-  console.log('FetchOrder', req.params)
-  console.log('FetchOrder', query)
+  // console.log('FetchOrder', req.params)
+  // console.log('FetchOrder', query)
   await new Promise((resolve, reject) => {
     if (trusted) {
       req.mongo.collection('orders')
@@ -49,7 +49,7 @@ const get = async (req, res) => {
       reject(new Error('Nope.'))
     }
   }).then(orders => {
-    console.log('FetchOrder', orders)
+    // console.log('FetchOrder', orders)
     res.json({ error: false, data: orders })
   }).catch(e => {
     res.json({ error: true, message: e.toString() })
