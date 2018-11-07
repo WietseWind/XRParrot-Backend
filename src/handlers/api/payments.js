@@ -118,6 +118,7 @@ const get = async (req, res) => {
                 let orderId = _paymentIdentification[1] + '.' + _paymentIdentification[2].toUpperCase()
                 // orderId = '1408.HCXD'
                 await require('./orders').get(Object.assign(req, { params: { order: orderId } }), { json: r => {
+                  console.log('FetchOrder>Payment', r)
                   if (r.data instanceof Object && Object.values(r.data).length > 0) {
                     _order = Object.values(r.data)[0]
                     if (typeof _order.moment === 'undefined') {
