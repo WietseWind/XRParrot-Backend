@@ -3,6 +3,8 @@ module.exports = {
     name: 'XRPARROT',
     script: 'index.js',
     watch: false,
+    instances: 10,
+    exec_mode: 'cluster',
     ignore_watch: ["node_modules", "db", ".git"],
     env: {
       NODE_ENV: 'development',
@@ -14,6 +16,5 @@ module.exports = {
       PORT: 3000,
       MONGO: "mongodb://mongo:27017/xrparrot" // Production assumes docker-compose
     }
-  }],
-  instances: 1
+  }]
 }
