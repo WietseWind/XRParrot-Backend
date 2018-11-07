@@ -165,6 +165,12 @@ const set = async (req, res) => {
         req.body.filter(p => {
           return typeof p === 'object' && p instanceof Object && typeof p.id !== 'undefined'
         }).forEach(p => {
+          if (typeof p.amount !== 'undefined' && p.amount instanceof Object && typeof p.amount.value !== 'undefined') {
+            if (parseFloat(p.amount.value) < 0) {
+              console.log('------ Hook for payment < 0 (outgoing), skip')
+              return false
+            }
+          }
           return req.mongo.collection('payments').updateOne({ 
             id: p.id
           }, { 
