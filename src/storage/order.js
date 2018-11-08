@@ -36,7 +36,7 @@ module.exports = async (req, ud) => {
     })
   }
 
-  return new Promise((resolve, reject) => {
+  const orderIdData = await new Promise((resolve, reject) => {
     req.config.__incrementId += Math.floor(Math.random() * (9 - 3 + 1) ) + 3
     req.mongo.collection('increment').updateOne({ 
       incrementId: { '$exists': true }
@@ -48,22 +48,25 @@ module.exports = async (req, ud) => {
         w: 'majority',
         j: true
       }
-    }, function(err, r) {
+    }, (err, r) => {
       if (err) {
         console.log('DB[INCREMENT] >> ERROR', err.toString())
         reject(err)
       } else {
         console.log(':: INCREMENTID ', req.config.__incrementId)
-        const ids = {
+        let ids = {
           id: req.config.__incrementId,
           checksum: to(req.config.__incrementId % 13),
           text: to(req.config.__incrementId)
         }
-        resolve(Object.assign(ids, {
-          string: `${ids.id}.${ids.text}${ids.checksum}`,
-          generated: true
-        }))
+        ids.string = `${ids.id}.${ids.text}${ids.checksum}`
+        ids.generated = true
+        console.log('-- IDS RESOLVE', ids)
+        resolve(ids)
       }
     })
   })
+  
+  console.log('-- Return orderIdData')
+  return orderIdData
 }
