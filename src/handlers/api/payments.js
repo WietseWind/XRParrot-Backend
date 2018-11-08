@@ -482,25 +482,33 @@ const callback = async (req, res) => {
         } else {
           const storageResults = { upsertedCount: u.upsertedCount, matchedCount: u.matchedCount, modifiedCount: u.modifiedCount, upsertedId: u.upsertedId }
           console.log(':: PAYMENT CALLBACK UPDATE ', paymentId, storageResults)
-          const aOk = (storageResults.matchedCount === 1 && storageResults.modifiedCount === 1) && typeof req.body.error !== 'undefined' && !req.body.error && typeof req.body.xrplTxResult !== 'undefined' && req.body.xrplTxResult.hash.match(/^[A-F0-9]+$/)
+          const paymentSentOK = (storageResults.matchedCount === 1 && storageResults.modifiedCount === 1) && typeof req.body.error !== 'undefined' && !req.body.error && typeof req.body.xrplTxResult !== 'undefined' && req.body.xrplTxResult.hash.match(/^[A-F0-9]+$/)
+          const refundSentOK = (storageResults.matchedCount === 1 && storageResults.modifiedCount === 1) && typeof req.body.error !== 'undefined' && !req.body.error && typeof req.body.xrplTxResult === 'undefined' && typeof req.body.paymentId !== 'undefined' && (req.body.paymentId + '').match(/^[0-9]+$/)
           resolve({
             payment: paymentId,
-            result: aOk
+            result: paymentSentOK || refundSentOK
           })
-          if (aOk) {
+          if (paymentSentOK || refundSentOK) {
             const messagebird = messagebirdApi(req.config.messagebirdKey)
-            const msgBody = `Woohoo! Your payment (${req.body.amounts.input}EUR, Payout: ${req.body.amounts.payout}EUR) came in. Transaction hash: ${req.body.xrplTxResult.hash}\n\n- XRParrot.com`
+            let msgBody = `Woohoo! Your payment (${req.body.amounts.input}EUR, Payout: ${req.body.amounts.payout}EUR) came in. Transaction hash: ${req.body.xrplTxResult.hash}\n\n- XRParrot.com`
+            if (!paymentSentOK && refundSentOK) {
+              try {
+                msgBody = `Your payment (${req.body.amounts.input}EUR) is refunded to your bank account: ${req.body.bankTransfer.data.counterpartyAlias.value} due to a missing reference or sending account mismatch. \n\n- XRParrot.com`
+              } catch (e) { msgBody = '' }
+            }
             const numberFormatted = req.body.order.details.phone
-            messagebird.messages.create({
-              originator: 'XRParrot',
-              recipients: [ numberFormatted ],
-              body: msgBody
-            }, function (err, r) {
-              if (err) {
-                console.log(`<< TX RESULT TEXT MESSAGE: Error sending text message to ${numberFormatted}`)
-              }
-              console.log(`Confirmation sent to: ${numberFormatted}\n>> ${msgBody}`)
-            })
+            if (msgBody !== '') {
+              messagebird.messages.create({
+                originator: 'XRParrot',
+                recipients: [ numberFormatted ],
+                body: msgBody
+              }, function (err, r) {
+                if (err) {
+                  console.log(`<< TX RESULT TEXT MESSAGE: Error sending text message to ${numberFormatted}`)
+                }
+                console.log(`MSG: ${paymentSentOK ? 'OK' : 'REFUND'} sent to: ${numberFormatted}\n>> ${msgBody}`)
+              })
+            }
           }
         }
       })              
