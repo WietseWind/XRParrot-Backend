@@ -490,12 +490,15 @@ const callback = async (req, res) => {
           })
           if (paymentSentOK || refundSentOK) {
             const messagebird = messagebirdApi(req.config.messagebirdKey)
-            let msgBody = `Woohoo! Your payment (${req.body.amounts.input}EUR, Payout: ${req.body.amounts.payout}EUR) came in. Transaction hash: ${req.body.xrplTxResult.hash}\n\n- XRParrot.com`
-            if (!paymentSentOK && refundSentOK) {
-              try {
+            let msgBody = ''
+            try {
+              if (paymentSentOK) {
+                msgBody = `Woohoo! Your payment (${req.body.amounts.input}EUR, Payout: ${req.body.amounts.payout}EUR) came in. Transaction hash: ${req.body.xrplTxResult.hash}\n\n- XRParrot.com`
+              }
+              if (refundSentOK) {
                 msgBody = `Your payment (${req.body.amounts.input}EUR) is refunded to your bank account: ${req.body.bankTransfer.data.counterpartyAlias.value} due to a missing reference or sending account mismatch. \n\n- XRParrot.com`
-              } catch (e) { msgBody = '' }
-            }
+              }
+            } catch (e) { msgBody = '' }
             const numberFormatted = req.body.order.details.phone
             if (msgBody !== '') {
               messagebird.messages.create({
