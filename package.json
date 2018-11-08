@@ -30,6 +30,7 @@
     "helmet": "^3.13.0",
     "ibantools": "^2.0.0",
     "ip-range-check": "0.0.2",
+    "mandrill-api": "^1.0.45",
     "messagebird": "^2.2.0",
     "mongodb": "^3.1.4",
     "node-fetch": "^2.2.0",
