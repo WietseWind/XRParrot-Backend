@@ -23,18 +23,18 @@
   "homepage": "https://github.com/WietseWind/xrparrot-internal-api",
   "dependencies": {
     "connect-mongo": "^2.0.1",
-    "express": "^4.16.3",
+    "express": "^4.16.4",
     "express-session": "^1.15.6",
-    "form-data": "^2.3.2",
+    "form-data": "^2.3.3",
     "google-libphonenumber": "^3.1.15",
-    "helmet": "^3.13.0",
+    "helmet": "^3.15.0",
     "ibantools": "^2.0.0",
     "ip-range-check": "0.0.2",
     "mandrill-api": "^1.0.45",
     "messagebird": "^2.2.0",
-    "mongodb": "^3.1.4",
-    "node-fetch": "^2.2.0",
-    "nunjucks": "^3.1.3",
+    "mongodb": "^3.1.9",
+    "node-fetch": "^2.2.1",
+    "nunjucks": "^3.1.4",
     "ripple-address-codec": "^2.0.1",
     "rippled-ws-client": "^1.0.0"
   },
@@ -48,8 +48,8 @@
     "logs": "docker-compose logs --tail 30 -f"
   },
   "devDependencies": {
-    "nodemon": "^1.18.4",
-    "pm2": "^3.0.4"
+    "nodemon": "^1.18.6",
+    "pm2": "^3.2.2"
   },
   "nodemonConfig": {
     "ignore": [
