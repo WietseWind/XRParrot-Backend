@@ -4,7 +4,7 @@ const messagebirdApi = require('messagebird')
 const ttl = 10 // Minutes before new text message will be sent
 
 module.exports = (req, res) => {
-  const messagebird = messagebirdApi(req.config.messagebirdKey)
+  let messagebird = messagebirdApi(req.config.messagebirdKey)
 
   // messagebird.balance.read(function (err, data) {
   //   if (err) {
@@ -101,6 +101,8 @@ module.exports = (req, res) => {
       req.session.codes = req.session.codes.slice(0, 15) // Save max. 15 codes in the session
       req.session.codeVsPhone[activationCode + ''] = numberFormatted
 
+      delete messagebird
+      
       if (err) {
         res.json(Object.assign(response, { 
           error: `Error sending text message to ${numberFormatted}`
