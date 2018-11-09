@@ -238,7 +238,7 @@ module.exports = async (req, res) => {
       tracking_domain: null,
       tags: [ 'xrparrot' ]
     }
-    console.log(typeof req.session.orderMail)
+    // console.log(typeof req.session.orderMail)
     if (typeof req.session.orderMail === 'undefined') {
       req.session.orderMail = []
     }
