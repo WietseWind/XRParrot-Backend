@@ -145,10 +145,14 @@ module.exports = async (req, res) => {
                       <tr>
                         <td bgcolor="#ffffff" align="left" style="padding: 20px 30px 0px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
                           <p style="margin: 0;">
+                            Your Order ID is <b>${req.session.orderDetails.description}</b>.
+                            You <b>must</b> add this ID to your payment to XRParrot.<br /><br />
+                            Your Order ID is linked to your source IBAN and destination XRP adddres & tag. You <b>can use this ID again</b> for future payments.<br /><br />
+                            If you forget this ID or if you want to change your payment source or XRP destination, you can simply generate a new ID.
+                            <br /><br />
                             <b style="color: #207AF9;">Please transfer your money (min. €5, max. €500) to the account details displayed below.</b>
                             <br /><br />
-                            <b>After you have transferred the money</b> it will take approximately <b>one working day</b> for your money to arrive at our bank. Immediately after your money arrives it will be converted and your XRP sent to you.<br />
-                            <small><br />We will send you a text message (SMS) when this happens.</small>
+                            After you have transferred the money it will take around one working day for your money to arrive at our bank. Immediately after your money arrives it will be converted and your XRP sent to you. We will send you a text message (SMS) when this happens.
                           </p>
                         </td>
                       </tr>
@@ -168,7 +172,7 @@ module.exports = async (req, res) => {
                             </p>
                           <p style="margin: 0;">
                             <small style="font-size: 14px;">Account name</small><br />
-                              <b style="padding-left: 20px;">XRParrot</b>
+                              <b style="padding-left: 20px;">XRParrot NL</b>
                             </p>
                           <p style="margin: 0;">
                             <small style="font-size: 14px;">BIC / Swift code</small><br />
