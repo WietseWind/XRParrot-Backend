@@ -176,19 +176,15 @@ module.exports = async (req, res) => {
                             </p>
                           <p style="margin: 0;">
                             <small style="font-size: 14px;">BIC / Swift code</small><br />
-                              <b style="padding-left: 20px;">BUNQNL2A</b>
+                              <b style="padding-left: 20px;">BUNQNL2A (or BUNQNL2AXXX)</b>
                             </p>
                           <p style="margin: 0;">
                             <small style="font-size: 14px;">Amount</small><br />
                               <b style="padding-left: 20px;">Min. &euro;5 per transaction, max. &euro;500 per month.</b>
                             </p>
                           <p style="margin: 0;">
-                            <small style="font-size: 14px;">Address, ZIP, city</small><br />
-                              <b style="padding-left: 20px;">Tolweg 5, 3741 LM, Baarn</b>
-                            </p>
-                          <p style="margin: 0;">
-                            <small style="font-size: 14px;">Country</small><br />
-                              <b style="padding-left: 20px;">The Netherlands (NL)</b>
+                            <small style="font-size: 14px;">beneficiary address</small><br />
+                              <b style="padding-left: 20px;">Tolweg 5, 3741 LM, Baarn, The Netherlands</b>
                             </p>
                           <p style="margin: 0;">
                             <small style="font-size: 14px;">Bank name</small><br />
