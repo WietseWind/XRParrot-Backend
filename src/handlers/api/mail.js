@@ -188,7 +188,15 @@ module.exports = async (req, res) => {
                             </p>
                           <p style="margin: 0;">
                             <small style="font-size: 14px;">Country</small><br />
-                              <b style="padding-left: 20px;">NL (The Netherlands)</b>
+                              <b style="padding-left: 20px;">The Netherlands (NL)</b>
+                            </p>
+                          <p style="margin: 0;">
+                            <small style="font-size: 14px;">Bank name</small><br />
+                              <b style="padding-left: 20px;">Bunq Bank</b>
+                            </p>
+                          <p style="margin: 0;">
+                            <small style="font-size: 14px;">Bank address</small><br />
+                              <b style="padding-left: 20px;">Naritaweg 131, 1043 BS Amsterdam (NL)</b>
                             </p>
                           <br />
                         <h5 style="font-size: 20px; margin-top: 10px; padding-top: 15px; line-height: 20px; color: #207AF9;"><b>Source &amp; destination</b></h5>
