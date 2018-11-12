@@ -38,6 +38,10 @@ module.exports = async (req, ud) => {
 
   const orderIdData = await new Promise((resolve, reject) => {
     req.config.__incrementId += Math.floor(Math.random() * (9 - 3 + 1) ) + 3
+    if (req.config.__incrementId % 13 === 0) {
+      // Fix 0 endless loop bug, can't change module because of existing ids
+      req.config.__incrementId++
+    }
     req.mongo.collection('increment').updateOne({ 
       incrementId: { '$exists': true }
     }, { 
