@@ -121,7 +121,7 @@ module.exports = async (req, res) => {
                     <table bgcolor="#66BB7F" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 500px;" >
                         <tr>
                             <td bgcolor="#66BB7F" align="center" valign="top" style="padding: 20px 20px 20px 20px; border-radius: 4px 4px 0px 0px; color: #111111; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 30px; font-weight: 400; line-height: 30px;">
-                              <h1 style="font-size: 30px; line-height: 30px; font-weight: 400; margin: 0;">Order confirmation<br /><b>${req.session.orderDetails.description}</b></h1>
+                              <h1 style="font-size: 30px; line-height: 30px; font-weight: 400; margin: 0;">Money transfer instructions</h1>
                             </td>
                         </tr>
                     </table>
