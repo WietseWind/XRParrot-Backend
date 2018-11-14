@@ -145,9 +145,9 @@ module.exports = async (req, res) => {
                       <tr>
                         <td bgcolor="#ffffff" align="left" style="padding: 20px 30px 0px 30px; color: #666666; font-family: 'Lato', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 400; line-height: 25px;" >
                           <p style="margin: 0;">
-                            Your Order ID is <b>${req.session.orderDetails.description}</b>.
+                            Your Payment ID is <b>${req.session.orderDetails.description}</b>.
                             You <b>must</b> add this ID to your payment to XRParrot.<br /><br />
-                            Your Order ID is linked to your source IBAN and destination XRP adddres & tag. You <b>can use this ID again</b> for future payments.<br /><br />
+                            Your Payment ID is linked to your source IBAN and destination XRP adddres & tag. You <b>can use this ID again</b> for future payments.<br /><br />
                             If you forget this ID or if you want to change your payment source or XRP destination, you can simply generate a new ID.
                             <br /><br />
                             <b style="color: #207AF9;">Please transfer your money (min. €5, max. €500) to the account details displayed below.</b>
