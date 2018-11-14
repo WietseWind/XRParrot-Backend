@@ -482,8 +482,8 @@ const callback = async (req, res) => {
         } else {
           const storageResults = { upsertedCount: u.upsertedCount, matchedCount: u.matchedCount, modifiedCount: u.modifiedCount, upsertedId: u.upsertedId }
           console.log(':: PAYMENT CALLBACK UPDATE ', paymentId, storageResults)
-          const paymentSentOK = (storageResults.matchedCount === 1 && storageResults.modifiedCount === 1) && typeof req.body.error !== 'undefined' && !req.body.error && typeof req.body.xrplTxResult !== 'undefined' && req.body.xrplTxResult.hash.match(/^[A-F0-9]+$/)
-          const refundSentOK = (storageResults.matchedCount === 1 && storageResults.modifiedCount === 1) && typeof req.body.error !== 'undefined' && !req.body.error && typeof req.body.xrplTxResult === 'undefined' && typeof req.body.paymentId !== 'undefined' && (req.body.paymentId + '').match(/^[0-9]+$/)
+          const paymentSentOK = (storageResults.matchedCount === 1 && storageResults.modifiedCount === 1) && typeof req.body.error !== 'undefined' && !req.body.error && typeof req.body.xrplTxPayout !== 'undefined' && req.body.xrplTxPayout.hash.match(/^[A-F0-9]+$/)
+          const refundSentOK = (storageResults.matchedCount === 1 && storageResults.modifiedCount === 1) && typeof req.body.error !== 'undefined' && !req.body.error && typeof req.body.xrplTxPayout === 'undefined' && typeof req.body.paymentId !== 'undefined' && (req.body.paymentId + '').match(/^[0-9]+$/)
           resolve({
             payment: paymentId,
             result: paymentSentOK || refundSentOK
@@ -492,10 +492,13 @@ const callback = async (req, res) => {
             const messagebird = messagebirdApi(req.config.messagebirdKey)
             let numberFormatted = ''
             let msgBody = ''
+            let originator = 'XRParrot'
             try {
               if (paymentSentOK) {
                 numberFormatted = req.body.order.details.phone
-                msgBody = `Woohoo! Your payment (${req.body.amounts.input}EUR, Payout: ${req.body.amounts.payout}EUR) came in. Transaction hash: ${req.body.xrplTxResult.hash}\n\n- XRParrot.com`
+                let amount = req.body.xrplTxPayout.Amount.toFixed(6).replace(/0+$/g, '')
+                msgBody = `Your payment (${req.body.amounts.input} EUR - ${amount} XRP) came in. https://xrparrot.com/#${req.body.xrplTxPayout.hash}\n- XRParrot.com`
+                originator = '+447427513374'
               }
               if (refundSentOK) {
                 msgBody = `Your payment (${req.body.amounts.input}EUR) is refunded to your bank account: ${req.body.bankTransfer.data.counterpartyAlias.value} due to a missing reference or sending account mismatch. \n\n- XRParrot.com`
@@ -503,7 +506,7 @@ const callback = async (req, res) => {
             } catch (e) { msgBody = '' }
             if (msgBody !== '' && numberFormatted !== '') {
               messagebird.messages.create({
-                originator: 'XRParrot',
+                originator: originator,
                 recipients: [ numberFormatted ],
                 body: msgBody
               }, function (err, r) {
