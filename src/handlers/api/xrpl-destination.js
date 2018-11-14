@@ -143,7 +143,7 @@ module.exports = async (req, res) => {
     valid: valid
   }
 
-  if (valid && (req.session.captcha || false) && typeof req.session.betaInvitation !== 'undefined') {
+  if (valid && (req.session.captcha || false) /* && typeof req.session.betaInvitation !== 'undefined'*/) {
     req.session.step = 1
     req.session.destination = {
       account: account,
