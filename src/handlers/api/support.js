@@ -46,8 +46,7 @@ module.exports = async (req, res) => {
     }
     // console.log(typeof req.session.orderMail)
     mandrillClient.messages.send({ message: mailMessage, async: false }, result => {
-      console.log('Mail sent', result)
-      req.session.orderMail.push(result)
+      console.log('Support mail sent (from: ' + mail + ')', result)
       res.json({ error: false, result: result })
     }, e => {
       let errorMsg = 'A mandrill error occurred: ' + e.name + ' - ' + e.message
