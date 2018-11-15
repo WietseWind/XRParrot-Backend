@@ -155,7 +155,7 @@ const get = async (req, res) => {
 }
 
 const set = async (req, res) => {
-  const orderMethod = typeof req.orderMethod === 'string' ? req.orderMethod : 'pull'
+  let orderMethod = typeof req.orderMethod === 'string' ? req.orderMethod : 'pull'
   if (orderMethod !== 'push' && (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || ''))) {
     return res.status(403).json({ error: true, message: '403. Nope.' })
   }
@@ -171,6 +171,9 @@ const set = async (req, res) => {
               console.log('------ Hook for payment < 0 (outgoing), skip')
               return false
             }
+          }
+          if (typeof p._original_description !== 'undefined' && typeof p.description !== 'undefined' && Object.keys(p).length === 3) {
+            orderMethod = 'manuallyUpdated'
           }
           return req.mongo.collection('payments').updateOne({ 
             id: p.id
@@ -190,7 +193,7 @@ const set = async (req, res) => {
               console.log('DB[PAYMENT] >> ERROR', err.toString())
               reject(err)
             } else {
-              console.log(':: PAYMENT REGISTERED ', p.id, { upsertedCount: r.upsertedCount, matchedCount: r.matchedCount, modifiedCount: r.modifiedCount, upsertedId: r.upsertedId })
+              console.log(':: PAYMENT [' + orderMethod + '] REGISTERED ', p.id, { upsertedCount: r.upsertedCount, matchedCount: r.matchedCount, modifiedCount: r.modifiedCount, upsertedId: r.upsertedId })
             }
           })
         })
