@@ -80,7 +80,7 @@ module.exports = (req, res) => {
     }
 
     messagebird.messages.create({
-      originator: 'XRParrot',
+      originator: '+447427513374',
       // type: 'flash',
       recipients: [ numberFormatted ],
       body: `Hi! Your activation code is ${activationCode} \n\n- XRParrot.com`

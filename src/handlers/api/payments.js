@@ -495,13 +495,13 @@ const callback = async (req, res) => {
             const messagebird = messagebirdApi(req.config.messagebirdKey)
             let numberFormatted = ''
             let msgBody = ''
-            let originator = 'XRParrot'
+            let originator = '+447427513374'
             try {
               if (paymentSentOK) {
                 numberFormatted = req.body.order.details.phone
                 let amount = (parseInt(req.body.xrplTxPayout.Amount) / 1000000).toFixed(6).replace(/0+$/g, '')
                 msgBody = `Your payment (${req.body.amounts.input} EUR - ${amount} XRP) came in. https://xrparrot.com/#${req.body.xrplTxPayout.hash}\n- XRParrot.com`
-                originator = '+447427513374'
+                // originator = '+447427513374'
               }
               if (refundSentOK) {
                 msgBody = `Your payment (${req.body.amounts.input}EUR) is refunded to your bank account: ${req.body.bankTransfer.data.counterpartyAlias.value} due to a missing reference or sending account mismatch. \n\n- XRParrot.com`
