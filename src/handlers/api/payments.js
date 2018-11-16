@@ -93,13 +93,23 @@ const get = async (req, res) => {
                 _validation.identificationMissing = 'No payment identifier (description) found'
               } else {
                 let textId = to(_paymentIdentification[1])
-                let textChecksum = to(_paymentIdentification[1] % 13)
+                let _textChecksum = _paymentIdentification[1] % 13
+                if (_textChecksum % 13 === 0) {
+                  // Fix 0 endless loop bug, can't change module because of existing ids
+                  _textChecksum++
+                }
+                let textChecksum = to(_textChecksum)
                 let userTextId = _paymentIdentification[2].toUpperCase().slice(0, -1)
                 let userTextChecksum = _paymentIdentification[2].toUpperCase().slice(-1)
                 if (_paymentIdentification[2].toUpperCase() !== textId + textChecksum) {
                   _validation.identificationMismatch = `Payment ID Text [${textId}${textChecksum}] doesn't match Payment ID Int [${_paymentIdentification[1]}]`
                 }
-                if (userTextChecksum !== to(from(userTextId) % 13)) {
+                let _userTextId = from(userTextId)
+                if (_userTextId % 13 === 0) {
+                  // Fix 0 endless loop bug, can't change module because of existing ids
+                  _userTextId++
+                }
+                if (userTextChecksum !== to(_userTextId % 13)) {
                   _validation.identificationChecksum = 'Invalid Payment ID Checksum'
                 }
                 if (from(userTextId) !== parseInt(_paymentIdentification[1])) {
