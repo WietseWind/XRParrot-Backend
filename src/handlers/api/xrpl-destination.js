@@ -84,6 +84,7 @@ module.exports = async (req, res) => {
                     return typeof tx.tx.TransactionType === 'string'
                       && tx.tx.TransactionType === 'Payment'
                       && typeof tx.tx.DestinationTag !== 'undefined'
+                      && (tx.tx.DestinationTag + '') !== '0'
                       && tx.tx.Destination === account
                   }).length
                 }
