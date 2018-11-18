@@ -13,7 +13,7 @@ module.exports = (req, res) => {
     .then(res => res.json())
     .then(json => {
       console.log(`-- Captcha Response ${json.score || 0} (${json.success ? 'OK' : 'ERR'}) @ ${req.session.id}`)
-      if (json.success && json.score > 0.5) {
+      if (json.success && json.score >= 0.3) {
         req.session.captcha = true
       }
       const order = (req.session.verified || false) ? (req.session.order || '') : null 
