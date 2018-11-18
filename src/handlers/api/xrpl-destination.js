@@ -109,7 +109,7 @@ module.exports = async (req, res) => {
 
   if (addressValid && accountActivated) {
     await new Promise(resolve => {
-      fetch('https://bithomp.com/api/v1/userinfo/' + account, { method: 'GET' })
+      fetch('https://bithomp.com/api/v1/userinfo/' + account, { method: 'GET', timeout: 5000 })
         .then(res => res.json())
         .then(json => {
           console.log(`-- AccountInfo [BITHOMP API] @ ${req.session.id}`, json)
@@ -118,7 +118,10 @@ module.exports = async (req, res) => {
           }
           return resolve()
         })
-        .catch(e => console.log(`BITHOMP API ERROR`, e))
+        .catch(e => {
+          console.log(`BITHOMP API ERROR`, e)
+          return resolve()
+        })
     })
   }
 
