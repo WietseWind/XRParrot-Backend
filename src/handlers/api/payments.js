@@ -1,6 +1,6 @@
 const ipRange = require("ip-range-check")
 const { to, from } = require('../../helpers/orderDescriptionEncoder')
-const messagebirdApi = require('messagebird')
+// const messagebirdApi = require('messagebird')
 
 const cursor = async (req, res) => {
   const trusted = ipRange(req.remoteAddress, req.config.platformIps || "127.0.0.1")
@@ -502,7 +502,8 @@ const callback = async (req, res) => {
             result: paymentSentOK || refundSentOK
           })
           if (paymentSentOK || refundSentOK) {
-            const messagebird = messagebirdApi(req.config.messagebirdKey)
+            let smsclient = require('twilio')(req.config.twilioAccountSid, req.config.twilioAuthToken)        
+            // const messagebird = messagebirdApi(req.config.messagebirdKey)
             let numberFormatted = ''
             let msgBody = ''
             let originator = '+447427513374'
@@ -521,16 +522,32 @@ const callback = async (req, res) => {
               msgBody = '' 
             }
             if (msgBody !== '' && numberFormatted !== '') {
-              messagebird.messages.create({
-                originator: originator,
-                recipients: [ numberFormatted ],
-                body: msgBody
-              }, function (err, r) {
-                if (err) {
-                  console.log(`<< TX RESULT TEXT MESSAGE: Error sending text message to ${numberFormatted}`)
-                }
-                console.log(`MSG: ${paymentSentOK ? 'OK' : 'REFUND'} sent to: ${numberFormatted}\n>> ${msgBody}`)
-              })
+              smsclient.messages
+                .create({
+                  body: msgBody,
+                  from: req.config.textPhoneNumber,
+                  to: numberFormatted
+                })
+                .then(r => {
+                  delete smsclient
+                  return console.log(`MSG: ${paymentSentOK ? 'OK' : 'REFUND'} sent to: ${numberFormatted}\n>> ${msgBody}`)
+                })
+                .catch(err => {
+                  delete smsclient
+                  console.log(`MSG: ${paymentSentOK ? 'OK' : 'REFUND'} sent to: ${numberFormatted}\n>> ${msgBody}`)
+                  return console.log(`<< TX RESULT TEXT MESSAGE: Error sending text message to ${numberFormatted}`)
+                })
+                .done()
+              // messagebird.messages.create({
+              //   originator: originator,
+              //   recipients: [ numberFormatted ],
+              //   body: msgBody
+              // }, function (err, r) {
+              //   if (err) {
+              //     console.log(`<< TX RESULT TEXT MESSAGE: Error sending text message to ${numberFormatted}`)
+              //   }
+              //   console.log(`MSG: ${paymentSentOK ? 'OK' : 'REFUND'} sent to: ${numberFormatted}\n>> ${msgBody}`)
+              // })
             }
           }
         }

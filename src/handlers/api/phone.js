@@ -1,10 +1,10 @@
 const PNF = require('google-libphonenumber').PhoneNumberFormat
 const phoneUtil = require('google-libphonenumber').PhoneNumberUtil.getInstance()
-const messagebirdApi = require('messagebird')
+// const messagebirdApi = require('messagebird')
 const ttl = 10 // Minutes before new text message will be sent
 
 module.exports = (req, res) => {
-  let messagebird = messagebirdApi(req.config.messagebirdKey)
+  // let messagebird = messagebirdApi(req.config.messagebirdKey)
 
   // messagebird.balance.read(function (err, data) {
   //   if (err) {
@@ -79,43 +79,84 @@ module.exports = (req, res) => {
       }
     }
 
-    messagebird.messages.create({
-      originator: '+447427513374',
-      // type: 'flash',
-      recipients: [ numberFormatted ],
-      body: `Hi! Your activation code is ${activationCode} \n\n- XRParrot.com`
-    }, function (err, r) {
-      if (typeof req.session.phone === 'undefined') req.session.phone = []
-      if (typeof req.session.codes === 'undefined') req.session.codes = []
-      if (typeof req.session.codeVsPhone === 'undefined') req.session.codeVsPhone = {}
-
-      req.session.phone.push({
-        no: numberFormatted,
-        err: err,
-        res: r,
-        code: activationCode,
-        ts: Math.floor(Date.now() / 1000)
+    let smsclient = require('twilio')(req.config.twilioAccountSid, req.config.twilioAuthToken)
+    smsclient.messages
+      .create({
+        body: `Hi! Your activation code is ${activationCode} \n\n- XRParrot.com`,
+        from: req.config.textPhoneNumber,
+        to: numberFormatted
       })
+      .then(r => {
+        if (typeof req.session.phone === 'undefined') req.session.phone = []
+        if (typeof req.session.codes === 'undefined') req.session.codes = []
+        if (typeof req.session.codeVsPhone === 'undefined') req.session.codeVsPhone = {}
 
-      req.session.codes.unshift(activationCode)
-      req.session.codes = req.session.codes.slice(0, 15) // Save max. 15 codes in the session
-      req.session.codeVsPhone[activationCode + ''] = numberFormatted
+        req.session.phone.push({
+          no: numberFormatted,
+          err: null,
+          res: r.sid,
+          code: activationCode,
+          ts: Math.floor(Date.now() / 1000)
+        })
 
-      delete messagebird
-      
-      if (err) {
+        req.session.codes.unshift(activationCode)
+        req.session.codes = req.session.codes.slice(0, 15) // Save max. 15 codes in the session
+        req.session.codeVsPhone[activationCode + ''] = numberFormatted
+
+        res.json(Object.assign(response, { 
+          valid: true
+          // msgId: r.id
+        }))
+
+        delete smsclient
+        return console.log(Object.assign(r, { _version: null }))
+      })
+      .catch(err => {
         res.json(Object.assign(response, { 
           error: `Error sending text message to ${numberFormatted}`
         }))
+        delete smsclient
         return console.log(err)
-      }
+      })
+      .done()
+      
+    // messagebird.messages.create({
+    //   originator: '+447427513374',
+    //   // type: 'flash',
+    //   recipients: [ numberFormatted ],
+    //   body: `Hi! Your activation code is ${activationCode} \n\n- XRParrot.com`
+    // }, function (err, r) {
+    //   if (typeof req.session.phone === 'undefined') req.session.phone = []
+    //   if (typeof req.session.codes === 'undefined') req.session.codes = []
+    //   if (typeof req.session.codeVsPhone === 'undefined') req.session.codeVsPhone = {}
 
-      console.dir(r, { depth: null })
-      res.json(Object.assign(response, { 
-        valid: true
-        // msgId: r.id
-      }))
-    })
+    //   req.session.phone.push({
+    //     no: numberFormatted,
+    //     err: err,
+    //     res: r,
+    //     code: activationCode,
+    //     ts: Math.floor(Date.now() / 1000)
+    //   })
+
+    //   req.session.codes.unshift(activationCode)
+    //   req.session.codes = req.session.codes.slice(0, 15) // Save max. 15 codes in the session
+    //   req.session.codeVsPhone[activationCode + ''] = numberFormatted
+
+    //   delete messagebird
+      
+    //   if (err) {
+    //     res.json(Object.assign(response, { 
+    //       error: `Error sending text message to ${numberFormatted}`
+    //     }))
+    //     return console.log(err)
+    //   }
+
+    //   console.dir(r, { depth: null })
+    //   res.json(Object.assign(response, { 
+    //     valid: true
+    //     // msgId: r.id
+    //   }))
+    // })
   } catch (e) {
     const jsonResponse = Object.assign(response, {
       invalidNo: true,
