@@ -1,4 +1,4 @@
-const ipRange = require("ip-range-check")
+const ipRange = require('ip-range-check')
 const { to, from } = require('../../helpers/orderDescriptionEncoder')
 // const messagebirdApi = require('messagebird')
 
@@ -51,6 +51,102 @@ const get = async (req, res) => {
   if (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || '')) {
     return res.status(403).json({ error: true, message: '403. Nope.' })
   }
+  let oneMonthAgo = new Date('2018-10-27')
+  oneMonthAgo.setTime(oneMonthAgo.getTime() - 28 * 24 * 60 * 60)
+  let limits = {
+    phone: {},
+    bank: {}
+  }
+  await Promise.all([
+    new Promise((resolve, reject) => {
+      req.mongo.collection('payments')
+        .aggregate([
+          { 
+            '$match': {
+              '_processed': {
+                '$gt': oneMonthAgo
+              }, 
+              '_sent': {
+                '$exists': true
+              }
+            }
+          }, 
+          { 
+            '$project': {
+              '_id': true, 
+              'id': '$id', 
+              'bank': '$_sent.order.details.bank', 
+              'phone': '$_sent.order.details.phone', 
+              'amount': '$_sent.amounts.input'
+            }
+          }, 
+          { 
+            '$group': {
+              '_id': '$phone', 
+              'amount': {
+                '$sum': '$amount'
+              },
+              'ids': {
+                '$push': '$id'
+              }
+            }
+          }
+        ]).toArray((err, data) => {
+          if (err) return reject(err)
+          data.forEach(d => {
+            limits.phone[d._id] = {
+              amount: d.amount,
+              ids: d.ids
+            }
+          })
+          resolve()
+        })
+    }),
+    new Promise((resolve, reject) => {
+      req.mongo.collection('payments')
+        .aggregate([
+          { 
+            '$match': {
+              '_processed': {
+                '$gt': oneMonthAgo
+              }, 
+              '_sent': {
+                '$exists': true
+              }
+            }
+          }, 
+          { 
+            '$project': {
+              '_id': true, 
+              'id': '$id', 
+              'bank': '$_sent.order.details.bank', 
+              'phone': '$_sent.order.details.phone', 
+              'amount': '$_sent.amounts.input'
+            }
+          }, 
+          { 
+            '$group': {
+              '_id': '$bank', 
+              'amount': {
+                '$sum': '$amount'
+              },
+              'ids': {
+                '$push': '$id'
+              }
+            }
+          }
+        ]).toArray((err, data) => {
+          if (err) return reject(err)
+          data.forEach(d => {
+            limits.bank[d._id] = {
+              amount: d.amount,
+              ids: d.ids
+            }
+          })
+          resolve()
+        })
+    })
+  ])
   await new Promise((resolve, reject) => {
     if (trusted) {
       let query = {}
@@ -78,6 +174,9 @@ const get = async (req, res) => {
               if (parseFloat(payment.amount.value) < 1) {
                 _validation.amount = 'Payment amount below 1 EUR'
               }
+              if (parseFloat(payment.amount.value) > 500) {
+                _validation.amount = 'Payment amount over 500 EUR'
+              }
               if (payment.amount.currency !== 'EUR') {
                 _validation.currency = 'Payment currency not EUR'
               }
@@ -87,7 +186,6 @@ const get = async (req, res) => {
               if (typeof payment._seen.pull === 'undefined') {
                 _validation.pull = 'Payment not PULL-verified (backend, from bank)'
               }
-              
               _paymentIdentification = payment.description.match(/([0-9]{4,})[ \.\/\-]*([a-zA-Z]{3,})/)
               if (!_paymentIdentification) {
                 _validation.identificationMissing = 'No payment identifier (description) found'
@@ -139,6 +237,17 @@ const get = async (req, res) => {
                         _validation.bankAccountMismatch = `Order for IBAN ${_order.details.bank}, payment received from ${payment.counterparty_alias.iban}`
                         _order = null
                       }
+                      // if (typeof [_order.details.bank.toUpperCase()])
+                      if (Object.keys(limits.bank).indexOf(_order.details.bank.toUpperCase()) > -1) {
+                        if (limits.bank[_order.details.bank.toUpperCase()].amount > 500) {
+                          _validation.bankLimit = `Monthly 500 EUR limit exceeded for ${_order.details.bank.toUpperCase()}, orders: [ ${limits.bank[_order.details.bank.toUpperCase()].ids.join(', ')} ]`
+                        }
+                      }
+                      if (Object.keys(limits.phone).indexOf(_order.details.phone) > -1) {
+                        if (limits.phone[_order.details.phone].amount > 500) {
+                          _validation.phoneLimit = `Monthly 500 EUR limit exceeded for ${_order.details.phone}, orders: [ ${limits.phone[_order.details.phone].ids.join(', ')} ]`
+                        }
+                      }
                     }
                   } else {
                     _validation.orderNotFound = 'Order not found.'
@@ -158,7 +267,7 @@ const get = async (req, res) => {
       reject(new Error('Nope.'))
     }
   }).then(payments => {
-    res.json({ error: false, data: payments })
+    res.json({ error: false, data: payments, limits: limits })
   }).catch(e => {
     res.json({ error: true, message: e.toString() })
   })
