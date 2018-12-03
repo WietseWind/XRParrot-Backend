@@ -235,7 +235,7 @@ const get = async (req, res) => {
                     } else {
                       if (_order.details.bank.toUpperCase() !== payment.counterparty_alias.iban.toUpperCase()) {
                         _validation.bankAccountMismatch = `Order for IBAN ${_order.details.bank}, payment received from ${payment.counterparty_alias.iban}`
-                        _order = null
+                        // _order = null
                       }
                       // if (typeof [_order.details.bank.toUpperCase()])
                       if (Object.keys(limits.bank).indexOf(_order.details.bank.toUpperCase()) > -1) {
