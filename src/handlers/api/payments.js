@@ -221,7 +221,7 @@ const get = async (req, res) => {
             let _order
             if (typeof payment._approved === 'undefined' || typeof req._processorderId !== 'undefined') {
               // Only do a hard-lookup for not yet approved orders
-              if (Object.keys(_validation).length === 0 || (Object.keys(_validation).length === 1 && [ 'push', 'pull' ].indexOf(Object.keys(_validation)[0]) > -1)) {
+              if (Object.keys(_validation).length === 0 || (Object.keys(_validation).length === 1 && Object.keys(_validation).indexOf('amount') > -1) || (Object.keys(_validation).length === 1 && [ 'push', 'pull' ].indexOf(Object.keys(_validation)[0]) > -1)) {
                 // NO errors or just a SOFT error (push / pull), so a order lookup is required
                 let orderId = _paymentIdentification[1] + '.' + _paymentIdentification[2].toUpperCase()
                 // orderId = '1408.HCXD'
