@@ -83,7 +83,10 @@ module.exports = (req, res) => {
     smsclient.messages
       .create({
         body: `Hi! Your activation code is ${activationCode} \n\n- XRParrot.com`,
-        from: req.config.textPhoneNumber,
+        from: req.config.textPhoneNumbers[Object.keys(req.config.textPhoneNumbers).filter(p => {
+                let re = new RegExp('^' + p.replace(/^\+/, '\\+'))
+                return re.test(numberFormatted)
+              })[0]],
         to: numberFormatted
       })
       .then(r => {
@@ -119,44 +122,6 @@ module.exports = (req, res) => {
         return console.log(err)
       })
       .done()
-      
-    // messagebird.messages.create({
-    //   originator: '+447427513374',
-    //   // type: 'flash',
-    //   recipients: [ numberFormatted ],
-    //   body: `Hi! Your activation code is ${activationCode} \n\n- XRParrot.com`
-    // }, function (err, r) {
-    //   if (typeof req.session.phone === 'undefined') req.session.phone = []
-    //   if (typeof req.session.codes === 'undefined') req.session.codes = []
-    //   if (typeof req.session.codeVsPhone === 'undefined') req.session.codeVsPhone = {}
-
-    //   req.session.phone.push({
-    //     no: numberFormatted,
-    //     err: err,
-    //     res: r,
-    //     code: activationCode,
-    //     ts: Math.floor(Date.now() / 1000)
-    //   })
-
-    //   req.session.codes.unshift(activationCode)
-    //   req.session.codes = req.session.codes.slice(0, 15) // Save max. 15 codes in the session
-    //   req.session.codeVsPhone[activationCode + ''] = numberFormatted
-
-    //   delete messagebird
-      
-    //   if (err) {
-    //     res.json(Object.assign(response, { 
-    //       error: `Error sending text message to ${numberFormatted}`
-    //     }))
-    //     return console.log(err)
-    //   }
-
-    //   console.dir(r, { depth: null })
-    //   res.json(Object.assign(response, { 
-    //     valid: true
-    //     // msgId: r.id
-    //   }))
-    // })
   } catch (e) {
     const jsonResponse = Object.assign(response, {
       invalidNo: true,

@@ -634,7 +634,10 @@ const callback = async (req, res) => {
               smsclient.messages
                 .create({
                   body: msgBody,
-                  from: req.config.textPhoneNumber,
+                  from: req.config.textPhoneNumbers[Object.keys(req.config.textPhoneNumbers).filter(p => {
+                          let re = new RegExp('^' + p.replace(/^\+/, '\\+'))
+                          return re.test(numberFormatted)
+                        })[0]],
                   to: numberFormatted
                 })
                 .then(r => {
