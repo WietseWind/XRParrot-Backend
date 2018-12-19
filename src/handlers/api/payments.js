@@ -233,9 +233,13 @@ const get = async (req, res) => {
                       _order = null
                       _validation.orderInvalid = `Order [${orderId}] invalid`
                     } else {
-                      if (_order.details.bank.toUpperCase() !== payment.counterparty_alias.iban.toUpperCase()) {
-                        _validation.bankAccountMismatch = `Order for IBAN ${_order.details.bank}, payment received from ${payment.counterparty_alias.iban}`
-                        // _order = null
+                      if ((typeof payment.counterparty_alias.iban === 'undefined' || payment.counterparty_alias.iban === null) && typeof payment.counterparty_alias.swift_account_number !== 'undefined') {
+                        _validation.bankAccountNonSepa = `Order for IBAN ${_order.details.bank}, payment received from SWIFT ${payment.counterparty_alias.swift_account_number}`
+                      } else {
+                        if (_order.details.bank.toUpperCase() !== payment.counterparty_alias.iban.toUpperCase()) {
+                          _validation.bankAccountMismatch = `Order for IBAN ${_order.details.bank}, payment received from ${payment.counterparty_alias.iban}`
+                          // _order = null
+                        }
                       }
                       // if (typeof [_order.details.bank.toUpperCase()])
                       if (Object.keys(limits.bank).indexOf(_order.details.bank.toUpperCase()) > -1) {
