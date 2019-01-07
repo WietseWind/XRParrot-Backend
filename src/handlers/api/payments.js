@@ -174,8 +174,8 @@ const get = async (req, res) => {
               if (parseFloat(payment.amount.value) < 1) {
                 _validation.amount = 'Payment amount below 1 EUR'
               }
-              if (parseFloat(payment.amount.value) > 500) {
-                _validation.amount = 'Payment amount over 500 EUR'
+              if (parseFloat(payment.amount.value) > 2000) {
+                _validation.amount = 'Payment amount over 2000 EUR'
               }
               if (payment.amount.currency !== 'EUR') {
                 _validation.currency = 'Payment currency not EUR'
@@ -243,13 +243,13 @@ const get = async (req, res) => {
                       }
                       // if (typeof [_order.details.bank.toUpperCase()])
                       if (Object.keys(limits.bank).indexOf(_order.details.bank.toUpperCase()) > -1) {
-                        if (limits.bank[_order.details.bank.toUpperCase()].amount > 500) {
-                          _validation.bankLimit = `Monthly 500 EUR limit exceeded for ${_order.details.bank.toUpperCase()}, orders: [ ${limits.bank[_order.details.bank.toUpperCase()].ids.join(', ')} ]`
+                        if (limits.bank[_order.details.bank.toUpperCase()].amount > 2000) {
+                          _validation.bankLimit = `Monthly 2000 EUR limit exceeded for ${_order.details.bank.toUpperCase()}, orders: [ ${limits.bank[_order.details.bank.toUpperCase()].ids.join(', ')} ]`
                         }
                       }
                       if (Object.keys(limits.phone).indexOf(_order.details.phone) > -1) {
-                        if (limits.phone[_order.details.phone].amount > 500) {
-                          _validation.phoneLimit = `Monthly 500 EUR limit exceeded for ${_order.details.phone}, orders: [ ${limits.phone[_order.details.phone].ids.join(', ')} ]`
+                        if (limits.phone[_order.details.phone].amount > 2000) {
+                          _validation.phoneLimit = `Monthly 2000 EUR limit exceeded for ${_order.details.phone}, orders: [ ${limits.phone[_order.details.phone].ids.join(', ')} ]`
                         }
                       }
                     }
