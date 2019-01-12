@@ -150,7 +150,7 @@ module.exports = async (req, res) => {
                             Your Payment ID is linked to your source IBAN and destination XRP adddres & tag. You <b>can use this ID again</b> for future payments.<br /><br />
                             If you forget this ID or if you want to change your payment source or XRP destination, you can simply generate a new ID.
                             <br /><br />
-                            <b style="color: #207AF9;">Please transfer your money (min. €5, max. €500) to the account details displayed below.</b>
+                            <b style="color: #207AF9;">Please transfer your money (min. €5, max. €2000) to the account details displayed below.</b>
                             <br /><br />
                             After you have transferred the money it will take around one working day for your money to arrive at our bank. Immediately after your money arrives it will be converted and your XRP sent to you. We will send you a text message (SMS) when this happens.
                           </p>
@@ -180,7 +180,7 @@ module.exports = async (req, res) => {
                             </p>
                           <p style="margin: 0;">
                             <small style="font-size: 14px;">Amount</small><br />
-                              <b style="padding-left: 20px;">Min. &euro;5 per transaction, max. &euro;500 per month.</b>
+                              <b style="padding-left: 20px;">Min. &euro;5 per transaction, max. &euro;2000 per month.</b>
                             </p>
                           <p style="margin: 0;">
                             <small style="font-size: 14px;">beneficiary address</small><br />
