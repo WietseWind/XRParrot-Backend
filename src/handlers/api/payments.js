@@ -51,7 +51,7 @@ const get = async (req, res) => {
   if (typeof req.config.apiAuthorization === 'undefined' || (req.headers['authorization'] || '') !== (req.config.apiAuthorization || '')) {
     return res.status(403).json({ error: true, message: '403. Nope.' })
   }
-  let oneMonthAgo = new Date('2018-10-27')
+  let oneMonthAgo = new Date()
   oneMonthAgo.setTime(oneMonthAgo.getTime() - 28 * 24 * 60 * 60)
   let limits = {
     phone: {},
