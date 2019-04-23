@@ -23,6 +23,7 @@ module.exports = async function (expressApp) {
   router.post('/finish', require('./api/finish'))
   router.post('/mail', require('./api/mail'))
   router.post('/support', require('./api/support'))
+  router.post('/token', require('./api/token'))
 
   router.get('/orders', require('./api/orders').get)
   router.get('/order/:order', require('./api/orders').get)
